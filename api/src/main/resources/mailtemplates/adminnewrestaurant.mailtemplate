@@ -1,0 +1,307 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+  <style type="text/css">
+.ReadMsgBody '{' width: 100%; background-color: #ffffff; '}'
+.ExternalClass '{' width: 100%; background-color: #ffffff; '}'
+.ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div '{' line-height: 100%; '}'
+html '{' width: 100%; '}'
+body '{' -webkit-text-size-adjust: none; -ms-text-size-adjust: none; '}'
+body '{' margin: 0; padding: 0; '}'
+table '{' border-spacing: 0; '}'
+img '{' display: block !important; '}'
+table td '{' border-collapse: collapse; '}'
+.yshortcuts a '{' border-bottom: none !important; '}'
+a '{' color: #cf4747; text-decoration: none; '}'
+ @media only screen and (max-width: 640px) '{'
+body '{' width: auto !important; '}'
+table[class="table600"] '{' width: 450px !important; text-align: center !important; '}'
+table[class="table-inner"] '{' width: 86% !important; text-align: center !important; '}'
+table[class="table2-2"] '{' width: 47% !important; '}'
+table[class="table3-3"] '{' width: 100% !important; text-align: center !important; '}'
+table[class="table1-3"] '{' width: 29.9% !important; '}'
+table[class="table3-1"] '{' width: 64% !important; text-align: center !important; '}'
+table[class="footer-note"] '{' width: 100% !important; text-align: left !important; '}'
+/* Image */
+img[class="img1"] '{' width: 100% !important; height: auto !important; '}'
+/*Footer*/
+table[class="footer-column"] '{' width: 47% !important; text-align: left !important; '}'
+'}'
+ @media only screen and (max-width: 479px) '{'
+body '{' width: auto !important; '}'
+table[class="table600"] '{' width: 290px !important; '}'
+table[class="table-inner"] '{' width: 80% !important; '}'
+table[class="table2-2"] '{' width: 100% !important; '}'
+table[class="table3-3"] '{' width: 100% !important; text-align: center !important; '}'
+table[class="table1-3"] '{' width: 100% !important; '}'
+table[class="table3-1"] '{' width: 100% !important; text-align: center !important; '}'
+table[class="middle-line"] '{' display: none !important; '}'
+table[class="footer-note"] '{' width: 100% !important; text-align: center !important; '}'
+/* image */
+img[class="img1"] '{' width: 100% !important; '}'
+/*Footer*/
+table[class="footer-column"] '{' width: 100% !important; text-align: center !important; '}'
+'}'
+</style>
+</head>
+
+<body>
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+    <tr>
+      <td valign="top">
+        <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+          <!--Header Bar-->
+          <tr>
+            <td bgcolor="#cf4747" style="border-bottom:1px solid #ffffff;">
+              <table width="600" class="table600" border="0" align="center" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td height="20"></td>
+                </tr>
+                <tr>
+                  <td valign="bottom">
+                    <!--Logo-->
+
+                    <a href={0}>
+		                <table class="table3-3" width="500" border="0" align="left" cellpadding="0" cellspacing="0">
+		                      <tr>
+		                        <td align="left" valign="bottom" style="width: 60px;">
+		                          <img src={1}  alt="logo" />
+		                        </td>
+		                        <td align="left" valign="bottom" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#fff; font-size:16px; line-height:35px; padding-left: 5px;">
+		                          {2}
+		                        </td>
+		                      </tr>
+		                </table>
+                      </a>
+
+                    <!--End Logo-->
+                    <!-- social -->
+
+                    <table align="right" class="table600" width="40" border="0" cellspacing="0" cellpadding="0">
+               
+                      <tr>
+                        <td valign="bottom">
+                          <table width="30" border="0" align="center" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="max-width:19">
+                                <a style="margin-top: 15px;display: block;" href="http://www.facebook.com/{3}"><img src="http://www.redefood.com.br/images/email/v2/facebook.png" alt="" border="0" style="display: block;">
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- end social -->
+                  </td>
+                </tr>
+                <tr>
+                  <td height="15" style="border-bottom:2px solid #ffffff;"></td>
+                </tr>
+                <tr>
+                  <td height="20"></td>
+                </tr>
+                <tr valign="top">
+                  <td style="font-family: 'century gothic', arial, sans-serif; color:#FFFFFF; font-size:33px; font-weight:bold;">
+                      Novo estabelecimento cadastrado
+                  </td>
+                </tr>
+                <tr>
+                  <td height="20"></td>
+                </tr>
+                <tr valign="top">
+                  <td style="font-family:'open sans', arial, sans-serif; color:#bdc3c7; font-size:16px; line-height:24px;">
+                    Foi enviado um pedido de registro ao RedeFood.
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td height="20"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!--End Header Bar-->
+
+      
+          <!-- end header bottom line -->
+
+          <!-- Quote+buttons -->
+          <tr>
+            <td>
+              <table width="600" border="0" align="center" cellpadding="0" cellspacing="0" class="table600">
+                <tr>
+                  <td height="35"></td>
+                </tr>
+                <tr>
+                  <td>
+                    <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
+                          <strong>Nome do estabelecimento:</strong> {4}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee; border-bottom: 1px solid #fff;">
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
+                          <strong>CNPJ:</strong> {5}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee; border-bottom: 1px solid #fff;">
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
+                          <strong>Cidade:</strong> {6}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                <tr>
+                  <td>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee; border-bottom: 1px solid #fff;">
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
+                          <strong>Bairro:</strong> {7}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee; border-bottom: 1px solid #fff;">
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
+                          <strong>Consulta CNPJ:</strong> <a href="http://www.receita.fazenda.gov.br/pessoajuridica/cnpj/cnpjreva/cnpjreva_solicitacao.asp">Receita Federal</a> 
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee; border-bottom: 1px solid #fff;">
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
+                          <strong>ID estabelecimento:</strong> {8}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td height="30"></td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+          <!-- end Quote+buttons -->
+
+          <tr>
+            <td>
+              <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#2d2c31">
+                <tbody><tr>
+                  <td>
+                    <table class="table600" width="600" border="0" align="center" cellpadding="0" cellspacing="0">
+                      <tbody><tr>
+                        <td height="30"></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <!-- left -->
+
+                          <table border="0" align="left" cellpadding="0" cellspacing="0" class="table2-2">
+                            
+                            <tr>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">Thiago Vieira </td>
+                            </tr>
+                            <tr>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">Gerente comercial RedeFood</td>
+                            </tr>
+                            <tr>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">contato@redefood.com.br (Segunda a Sexta das 9h às 19h)</td>
+                            </tr>
+                          </table>
+                          <!-- end right -->
+                        </td>
+                      </tr>
+                      <tr>
+                        <td height="30"></td>
+                      </tr>
+                    </tbody></table>
+                  </td>
+                </tr>
+              </tbody></table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <!-- begin footer-->
+              <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#ecf0f1">
+                <tbody><tr>
+                  <td>
+                    <table class="table600" width="600" border="0" align="center" cellpadding="0" cellspacing="0">
+                      <tbody><tr>
+                        <td height="15"></td>
+                      </tr>
+                      <tr>
+                        <td align="center" valign="top" style="text-align: center; font-family:'open sans', arial, sans-serif; color:#333; font-size:14px; line-height:26px;">Você está recebendo este email por estar cadastrado no RedeFood.</td>
+                      </tr>
+                      <tr>
+                        <td height="15"></td>
+                      </tr>
+                    </tbody></table>
+                  </td>
+                </tr>
+              </tbody></table>
+            </td>
+          </tr>
+
+          <!-- end footer -->
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

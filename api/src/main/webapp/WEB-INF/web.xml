@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/j2ee/web-app_3_0.xsd"
+	id="WebApp_ID" version="2.4">
+	<display-name>RedeFood's RESTful API</display-name>
+
+	<context-param>
+		<param-name>resteasy.resources</param-name>
+		<param-value>
+			br.com.redefood.rest.AccountResource,
+			br.com.redefood.rest.AdminLoginResource,
+			br.com.redefood.rest.BeverageResource,
+			br.com.redefood.rest.BoardResource,
+			br.com.redefood.rest.CepResource,
+			br.com.redefood.rest.CityResource,
+			br.com.redefood.rest.DashboardResource,
+			br.com.redefood.rest.EmployeeResource,
+			br.com.redefood.rest.IngredientResource,
+			br.com.redefood.rest.NeighborhoodResource,
+			br.com.redefood.rest.LoginIdentificationResource,
+			br.com.redefood.rest.LoginResource,
+			br.com.redefood.rest.MealResource,
+			br.com.redefood.rest.ModuleResource,
+			br.com.redefood.rest.OAuthLogin,
+			br.com.redefood.rest.OrderStatusResource,
+			br.com.redefood.rest.OrderResource,
+			br.com.redefood.rest.OrderTypeResource,
+			br.com.redefood.rest.ParameterResource,
+			br.com.redefood.rest.RatingResource,
+			br.com.redefood.rest.RedeFoodAdminResource,
+			br.com.redefood.rest.RedeFoodResource,
+			br.com.redefood.rest.RestaurantResource,
+			br.com.redefood.rest.SquareResource,
+			br.com.redefood.rest.SubsidiaryResource,
+			br.com.redefood.rest.UserResource
+		</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>resteasy.providers</param-name>
+		<param-value>
+			br.com.redefood.provider.CustomJsonDateSerializer,
+			br.com.redefood.provider.CustomJsonDateDeserializer,
+			<!-- br.com.redefood.interceptor.IPSecurityInterceptor, -->
+			br.com.redefood.interceptor.OwnerInterceptor,
+			br.com.redefood.interceptor.OwnerOrManagerInterceptor,
+			br.com.redefood.interceptor.RedeFoodAdminInterceptor,
+			br.com.redefood.interceptor.SecurableInterceptor,
+			com.thetransactioncompany.cors.CORSFilter
+		</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>
+			org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap
+		</listener-class>
+	</listener>
+
+	<servlet>
+		<servlet-name>resteasy-servlet</servlet-name>
+		<servlet-class>
+			org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher
+		</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>resteasy-servlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+	<filter>
+		<!-- The CORS filter with parameters -->
+		<filter-name>CORS</filter-name>
+		<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+
+		<!-- Note: All parameters are options, if ommitted CORS Filter will fall 
+			back to the respective default values. -->
+		<init-param>
+			<param-name>cors.allowGenericHttpRequests</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.allowOrigin</param-name>
+			<param-value>*</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.allowAnyOrigin</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.allowSubdomains</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.supportedMethods</param-name>
+			<param-value>GET, POST, HEAD, PUT, DELETE</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.supportedHeaders</param-name>
+			<param-value>Origin, content-type, Accept, Content-Type,
+				X-Requested-With</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.supportsCredentials</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.maxAge</param-name>
+			<param-value>3600</param-value>
+		</init-param>
+
+	</filter>
+
+	<filter-mapping>
+		<!-- CORS Filter mapping -->
+		<filter-name>CORS</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+
+	<!-- <context-param> <param-name>resteasy.server.cache.maxsize</param-name> 
+		<param-value>10000</param-value> </context-param> <context-param> <param-name>resteasy.server.cache.eviction.wakeup.interval</param-name> 
+		<param-value>5000</param-value> </context-param> <listener> <listener-class> 
+		org.jboss.resteasy.plugins.cache.server.ServletServerCache </listener-class> 
+		</listener> -->
+</web-app>

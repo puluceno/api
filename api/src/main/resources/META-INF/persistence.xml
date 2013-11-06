@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0"
+	xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+        http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+	<persistence-unit name="RedeFood" transaction-type="JTA">
+		<!-- <provider>org.hibernate.ejb.HibernatePersistence</provider> -->
+		<jta-data-source>java:/RedeFood</jta-data-source>
+		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+		<properties>
+			<!-- Properties for Hibernate -->
+			<property name="hibernate.show_sql" value="false" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+
+			<!-- Properties for Hibernate 2nd level cache with Infinispan -->
+			<property name="hibernate.cache.use_second_level_cache"
+				value="true" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<!-- <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.infinispan.InfinispanRegionFactory"/> -->
+
+
+
+			<!-- <property name="hibernate.cache.region.factory_class" value ="org.hibernate.cache.ehcache.EhCacheRegionFactory" 
+				/> <property name="hibernate.cache.use_second_level_cache" value="true" /> 
+				<property name="hibernate.cache.use_query_cache" value="true" /> <property 
+				name="hibernate.cache.use_structured_entries" value="true" /> <property name="hibernate.cache.region_prefix" 
+				value=""/> <property name="net.sf.ehcache.configurationResourceName" value="ehcache.xml"/> 
+				<property name="hibernate.generate_statistics" value="true"/> -->
+		</properties>
+	</persistence-unit>
+</persistence>
