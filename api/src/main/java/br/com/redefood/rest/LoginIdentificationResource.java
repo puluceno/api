@@ -166,13 +166,14 @@ public class LoginIdentificationResource extends HibernateMapper {
     @Produces("application/json;charset=UTF8")
     @Consumes("application/json")
     public Response resetEmployeePass(@HeaderParam("locale") String locale,
-	    @QueryParam("idSubsidiary") Short idSubsidiary, @QueryParam("originUrl") String originUrl, String cpf) {
+	    @QueryParam("idSubsidiary") Short idSubsidiary, @QueryParam("originUrl") String originUrl,
+	    HashMap<String, String> cpf) {
 	
 	try {
-	    log.log(Level.INFO, "Resetting access for employee with cpf " + cpf);
+	    log.log(Level.INFO, "Resetting access for employee with cpf " + cpf.get("cpf"));
 	    
-	    Employee employee = (Employee) em.createNamedQuery(Employee.FIND_BY_CPF).setParameter("cpf", cpf)
-		    .getSingleResult();
+	    Employee employee = (Employee) em.createNamedQuery(Employee.FIND_BY_CPF)
+		    .setParameter("cpf", cpf.get("cpf")).getSingleResult();
 	    
 	    String addressee = "";
 	    
@@ -186,7 +187,7 @@ public class LoginIdentificationResource extends HibernateMapper {
 	    
 	    sendResetNotification(emailData);
 	    
-	    String answer = LocaleResource.getString(locale, "user.reset", employee.getEmail());
+	    String answer = LocaleResource.getString(locale, "user.reset", addressee);
 	    log.log(Level.INFO, answer);
 	    
 	    String jsonReturn = "{\"cpf\":\"" + cpf + "\"}";
@@ -195,48 +196,6 @@ public class LoginIdentificationResource extends HibernateMapper {
 	} catch (Exception e) {
 	    return eh.genericExceptionHandlerResponse(e, locale);
 	}
-    }
-    
-    /**
-     * Method responsible for preparing all data to send email
-     * 
-     * @param idSubsidiary
-     *            idSubsidiary
-     * @param employee
-     *            employee
-     * @param addressee
-     *            addressee
-     * @param originUrl
-     *            Requester origin URL.
-     * @return EmailDataDTO emailData
-     * @throws Exception
-     *             exception
-     */
-    private EmailDataDTO<String, String> prepareMailData(Short idSubsidiary, Employee employee, String addressee,
-	    String originUrl) throws Exception {
-	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>("");
-	if (idSubsidiary != null) {
-	    Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-	    RedeFoodMailUtil.prepareSubsidiaryLogoAndFooter(emailData, subsidiary);
-	    emailData.put("facebook", subsidiary.getFacebook());
-	    emailData.put("userName", employee.getFirstName());
-	    emailData.put("urlPass", "\"" + createTemporaryAccess(employee, originUrl));
-	    emailData.put("userDataLog", employee.getCpf());
-	    emailData.put("addressee", addressee);
-	} else {
-	    // get redefood data
-	    RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
-	    emailData.put("userName", employee.getFirstName());
-	    emailData.put(
-		    "urlPass",
-		    "\""
-			    + createTemporaryAccess(employee, RedeFoodConstants.DEFAULT_URL_PREFIX
-				    + RedeFoodConstants.REDEFOOD_RESET_PASS) + "\"");
-	    
-	    emailData.put("userDataLog", employee.getCpf());
-	    emailData.put("addressee", addressee);
-	}
-	return emailData;
     }
     
     @Securable
@@ -520,15 +479,31 @@ public class LoginIdentificationResource extends HibernateMapper {
     public Response changeEmployeePassword(@HeaderParam("token") String token, @HeaderParam("locale") String locale,
 	    RedeFoodPassword updatePass) {
 	
-	Login login = em.find(Login.class, token);
-	
-	Employee employee = em.find(Employee.class, (short) login.getIdUser());
 	try {
+	    
+	    Login login = em.find(Login.class, token);
+	    
+	    if (login.isExpired())
+		throw new Exception("token expired");
+	    
+	    Employee employee = em.find(Employee.class, (short) login.getIdUser());
+	    
 	    if (employee == null)
 		throw new Exception("employee null");
-	    else if (employee.getPassword().equals(updatePass.getCurrent())) {
+	    
+	    if (employee.getPassword().equals(updatePass.getCurrent()) || updatePass.getCurrent() == null) {
+		log.log(Level.INFO, "Setting new password to employee " + employee.getCpf());
 		employee.setPassword(updatePass.getNewpass());
-		return editEmployeeByToken(token, locale, employee);
+		
+		if (updatePass.getCurrent() == null) {
+		    login.setExpired(true);
+		}
+		
+		em.merge(employee);
+		em.flush();
+		
+		String jsonUser = mapper.writeValueAsString(employee);
+		return Response.status(200).entity(jsonUser).build();
 	    } else
 		throw new Exception("invalid password");
 	} catch (Exception e) {
@@ -645,5 +620,41 @@ public class LoginIdentificationResource extends HibernateMapper {
 	Notificator notificator = new EmployeeForgotPassNotificator();
 	log.log(Level.INFO, "Sending e-mail to recover pass of the user " + emailData.get("userDataLog"));
 	notificator.send(emailData);
+    }
+    
+    /**
+     * Method responsible for preparing all data to send email
+     * 
+     * @param idSubsidiary
+     *            idSubsidiary
+     * @param employee
+     *            employee
+     * @param addressee
+     *            addressee
+     * @param originUrl
+     *            Requester origin URL.
+     * @return EmailDataDTO emailData
+     * @throws Exception
+     *             exception
+     */
+    private EmailDataDTO<String, String> prepareMailData(Short idSubsidiary, Employee employee, String addressee,
+	    String originUrl) throws Exception {
+	
+	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
+	
+	if (idSubsidiary != null) {
+	    Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
+	    RedeFoodMailUtil.prepareSubsidiaryLogoAndFooter(emailData, subsidiary);
+	    
+	} else {
+	    // get redefood data
+	    RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
+	}
+	
+	emailData.put("userName", employee.getFirstName());
+	emailData.put("urlPass", createTemporaryAccess(employee, originUrl));
+	emailData.put("userDataLog", employee.getCpf());
+	emailData.put("addressee", addressee);
+	return emailData;
     }
 }

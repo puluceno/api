@@ -597,24 +597,24 @@ public class OrderResource extends HibernateMapper {
 	// Increase LocalOrder
 	if (order.getOrderType().getId() == OrderType.LOCAL || order.getOrderType().getId() == OrderType.LOCAL_TO_GO
 		|| order.getOrderType().getId() == OrderType.EMPLOYEE_MEAL) {
-	    Integer lastOrderNumbers = (Integer) em.createNamedQuery(Orders.FIND_LAST_LOCAL_ORDER_NUMBER)
+	    Integer lastLocalOrderNumber = (Integer) em.createNamedQuery(Orders.FIND_LAST_LOCAL_ORDER_NUMBER)
 		    .setParameter("idSubsidiary", idSubsidiary).getSingleResult();
 	    
-	    if (lastOrderNumbers.intValue() >= 999) {
+	    if (lastLocalOrderNumber.intValue() >= 999) {
 		order.setLocalOrderNumber(1);
 	    } else {
-		order.setLocalOrderNumber(++lastOrderNumbers);
+		order.setLocalOrderNumber(++lastLocalOrderNumber);
 	    }
 	}
 	
 	// Increase TotalOrder
-	Integer totalOrder = (Integer) em.createNamedQuery(Orders.FIND_TOTAL_ORDER_NUMBER_BY_SUBSIDIARY)
+	Integer lastTotalOrderNumber = (Integer) em.createNamedQuery(Orders.FIND_TOTAL_ORDER_NUMBER_BY_SUBSIDIARY)
 		.setParameter("idSubsidiary", idSubsidiary).getSingleResult();
 	
-	if (totalOrder.intValue() >= 9999) {
+	if (lastTotalOrderNumber.intValue() >= 9999) {
 	    order.setTotalOrderNumber(1);
 	} else {
-	    order.setTotalOrderNumber(++totalOrder);
+	    order.setTotalOrderNumber(++lastTotalOrderNumber);
 	}
 	
 	// fix Payment Methods
@@ -1051,16 +1051,6 @@ public class OrderResource extends HibernateMapper {
 	log.log(Level.INFO, msg);
 	notificator.send(prepareMessage(order, paymentMethod, true));
 	
-    }
-    //FIXME remover este método
-    @POST
-    @Path("/order/{idOrders:[0-9][0-9]*}")
-    public Response testOrderEmail(@PathParam("idOrders") Integer idOrder) throws Exception {
-	Orders order = em.find(Orders.class, idOrder);
-	PaymentMethod pm = em
-		.find(PaymentMethod.class, order.getOrderPaymentMethod().get(0).getPaymentMethod().getId());
-	sendOrderToUserEmail(order, pm);
-	return Response.status(200).build();
     }
     
     private void sendOrderToUserEmail(Orders order, PaymentMethod paymentMethod) throws Exception {

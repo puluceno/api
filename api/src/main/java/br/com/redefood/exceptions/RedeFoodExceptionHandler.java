@@ -655,6 +655,11 @@ public class RedeFoodExceptionHandler {
 	    log.log(Level.INFO, answer);
 	    return RedeFoodAnswerGenerator.generateErrorAnswer(401, answer);
 	}
+	if (e.getMessage().contains("Inexistent reply")) {
+	    String answer = LocaleResource.getString(locale, "exception.rating.reply.not.exists", message[0]);
+	    log.log(Level.INFO, answer);
+	    return RedeFoodAnswerGenerator.generateErrorAnswer(401, answer);
+	}
 	return genericExceptionHandlerResponse(e, locale);
     }
     

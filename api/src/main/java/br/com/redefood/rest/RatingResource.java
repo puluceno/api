@@ -24,6 +24,9 @@ import javax.ws.rs.core.Response;
 
 import br.com.redefood.annotations.Securable;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
+import br.com.redefood.mail.notificator.Notificator;
+import br.com.redefood.mail.notificator.restaurant.SubsidiaryCommentReceivedNotificator;
+import br.com.redefood.mail.notificator.user.UserCommentReceivedNotificator;
 import br.com.redefood.model.Login;
 import br.com.redefood.model.Meal;
 import br.com.redefood.model.MealOrder;
@@ -32,9 +35,10 @@ import br.com.redefood.model.MealRating;
 import br.com.redefood.model.Orders;
 import br.com.redefood.model.Rating;
 import br.com.redefood.model.User;
-import br.com.redefood.model.complex.RatingReply;
+import br.com.redefood.model.complex.EmailDataDTO;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.LocaleResource;
+import br.com.redefood.util.RedeFoodConstants;
 import br.com.redefood.util.RedeFoodUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,18 +89,23 @@ public class RatingResource extends HibernateMapper {
 		ratingObj.put("costBenefit", rating.getCostBenefit());
 		ratingObj.put("experience", rating.getExperience());
 		ratingObj.put("comment", rating.getComment());
+		
 		if (rating.getRatingDate() != null) {
 		    ratingObj.put("ratingDate", RedeFoodUtils.formatDateOnly(rating.getRatingDate()));
 		}
+		
 		ratingObj.put("reply", rating.getReply());
 		if (rating.getReplyDate() != null) {
 		    ratingObj.put("replyDate", RedeFoodUtils.formatDateOnly(rating.getReplyDate()));
 		}
-		ratingObj.put("rejoinder", rating.getReply());
+		
+		ratingObj.put("rejoinder", rating.getRejoinder());
 		if (rating.getRejoinderDate() != null) {
 		    ratingObj.put("rejoinderDate", RedeFoodUtils.formatDateOnly(rating.getRejoinderDate()));
 		}
+		
 		ratingObj.put("idOrders", rating.getOrder().getId());
+		ratingObj.put("orderNumber", rating.getOrder().getTotalOrderNumber());
 		ratingObj.put("id", rating.getIdRating());
 		ratingObj.put("mealRatings", mealRatings);
 		ratingObj.put("user", user);
@@ -255,7 +264,7 @@ public class RatingResource extends HibernateMapper {
     @POST
     @Path("/order/{idOrder:[0-9][0-9]*}/rating")
     public Response createFeedback(@HeaderParam("locale") String locale, @PathParam("idOrder") Integer idOrder,
-	    Rating rating) {
+	    @QueryParam("originUrl") String originUrl, Rating rating) {
 	
 	try {
 	    log.log(Level.INFO, "Creating feedback for order " + idOrder);
@@ -279,6 +288,7 @@ public class RatingResource extends HibernateMapper {
 	    
 	    String answer = LocaleResource.getString(locale, "feedback.created", idOrder);
 	    log.log(Level.INFO, answer);
+	    sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl));
 	    return Response.status(201).build();
 	    
 	} catch (Exception e) {
@@ -290,7 +300,8 @@ public class RatingResource extends HibernateMapper {
     @PUT
     @Path("/order/{idOrder:[0-9][0-9]*}/rating")
     public Response createFeedbackReplyAndRejoinder(@HeaderParam("locale") String locale,
-	    @PathParam("idOrder") Integer idOrder, RatingReply ratingReply) {
+	    @PathParam("idOrder") Integer idOrder, @QueryParam("originUrl") String originUrl,
+	    HashMap<String, String> ratingReply) {
 	
 	try {
 	    log.log(Level.INFO, "Creating feedback reply for order id " + idOrder);
@@ -301,20 +312,24 @@ public class RatingResource extends HibernateMapper {
 	    
 	    String answer = "";
 	    
-	    if (ratingReply.getReply() != null && !ratingReply.getReply().isEmpty()) {
-		if(rating.getReply() != null && !rating.getReply().isEmpty())
-		    throw new Exception("Existent reply") ;
-		rating.setReply(ratingReply.getReply());
+	    if (ratingReply.get("reply") != null && !ratingReply.get("reply").isEmpty()) {
+		if (rating.getReply() != null && !rating.getReply().isEmpty())
+		    throw new Exception("Existent reply");
+		rating.setReply(ratingReply.get("reply"));
 		rating.setReplyDate(new Date());
 		answer = LocaleResource.getString(locale, "feedback.reply.created", idOrder);
+		sendUserRatingNotification(prepareMessage(rating, originUrl));
 	    }
 	    
-	    if (ratingReply.getRejoinder() != null && !ratingReply.getRejoinder().isEmpty()) {
-		if(rating.getRejoinder() != null || !rating.getRejoinder().isEmpty())
+	    if (ratingReply.get("rejoinder") != null && !ratingReply.get("rejoinder").isEmpty()) {
+		if (rating.getRejoinder() != null && !rating.getRejoinder().isEmpty())
 		    throw new Exception("Existent rejoinder");
-		rating.setRejoinder(ratingReply.getRejoinder());
+		if (rating.getReply() == null || rating.getReply().isEmpty())
+		    throw new Exception("Inexistent reply");
+		rating.setRejoinder(ratingReply.get("rejoinder"));
 		rating.setRejoinderDate(new Date());
 		answer = LocaleResource.getString(locale, "feedback.rejoinder.created", idOrder);
+		sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl));
 	    }
 	    
 	    log.log(Level.INFO, answer);
@@ -325,4 +340,39 @@ public class RatingResource extends HibernateMapper {
 	}
     }
     
+    private void sendSubsidiaryRatingNotification(HashMap<String, String> emailData) throws Exception {
+	Notificator notificator = new SubsidiaryCommentReceivedNotificator();
+	log.log(Level.INFO, "Sending e-mail about Rating to subsidiary " + emailData.get("subsidiaryName"));
+	notificator.send(emailData);
+    }
+    
+    private void sendUserRatingNotification(HashMap<String, String> emailData) throws Exception {
+	Notificator notificator = new UserCommentReceivedNotificator();
+	log.log(Level.INFO, "Sending e-mail about reply to user " + emailData.get("userName"));
+	notificator.send(emailData);
+    }
+    
+    private HashMap<String, String> prepareMessage(Rating rating, String originUrl) {
+	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
+	
+	emailData.put("orderNumber", String.valueOf(rating.getOrder().getTotalOrderNumber()));
+	emailData.put("userName", rating.getUser().getFirstName().toUpperCase());
+	emailData.put("ratingUrl", originUrl + RedeFoodConstants.DEFAULT_ADMIN_RATING_SUFFIX);
+	
+	emailData.put("subsidiaryName", rating.getSubsidiary().getName());
+	emailData.put("addressee", rating.getSubsidiary().getEmail());
+	
+	if (rating.getReply() == null) {
+	    emailData.put("title", RedeFoodConstants.COMMENT_TITLE + emailData.get("orderNumber"));
+	    emailData.put("comment", rating.getComment());
+	} else if (rating.getRejoinder() == null) {
+	    emailData.put("title", RedeFoodConstants.REPLY_TITLE + emailData.get("orderNumber"));
+	    emailData.put("comment", rating.getReply());
+	} else {
+	    emailData.put("title", RedeFoodConstants.REJOINDER_TITLE + emailData.get("orderNumber"));
+	    emailData.put("comment", rating.getRejoinder());
+	}
+	
+	return emailData;
+    }
 }

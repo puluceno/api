@@ -1,5 +1,7 @@
 package br.com.redefood.util;
 
+import br.com.redefood.model.Rating;
+
 /**
  * Constantes da aplicação.
  * 
@@ -218,5 +220,25 @@ public class RedeFoodConstants {
      * Default Suffix for dynamic rating urls
      */
     public static final String DEFAULT_RATING_SUFFIX = "/rating/";
+    
+    /**
+     * Default Suffix for dynamic rating ADMIN urls
+     */
+    public static final String DEFAULT_ADMIN_RATING_SUFFIX = "/admin/orders/rating";
+    
+    /**
+     * Default email title when a subsidiary receives a {@link Rating}
+     */
+    public static final String COMMENT_TITLE = "Você recebeu um comentário para o pedido número ";
+    
+    /**
+     * Default email title when a user receives a reply from a {@link Rating}
+     */
+    public static final String REPLY_TITLE = "Você recebeu uma resposta para seu comentário do pedido número ";
+    
+    /**
+     * Default email title when a subsidiary receives a rejoinder from a {@link Rating}
+     */
+    public static final String REJOINDER_TITLE = "Seu estabelecimento recebeu uma tréplica para o pedido número ";
     
 } // fim da classe RedeFoodConstants
