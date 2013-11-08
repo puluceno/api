@@ -847,6 +847,7 @@ public class OrderResource extends HibernateMapper {
 	}
     }
     
+    // FIXME
     @GET
     @Path("/order/{idOrder:[0-9][0-9]*}/fix")
     @Produces("application/json;charset=UTF8")
@@ -936,6 +937,29 @@ public class OrderResource extends HibernateMapper {
 	return "deu pau";
     }
     
+    //FIXME
+    @GET
+    @Path("/order/{idOrder:[0-9][0-9]*}/fixtest")
+    @Produces("application/json;charset=UTF8")
+    public HashMap<Object,Object> testIngredientListString(@PathParam("idOrder") Integer idOrder) {
+	// lista de categorias -> lista de pratos -> lista de ingredientes adicionados/removidos
+	HashMap<Object,Object> finalList = new HashMap<Object,Object>();
+	
+	Orders order = em.find(Orders.class, idOrder);
+	
+	for (MealOrder mealOrder : order.getMealsOrder()) {
+	    Meal meal = em.find(Meal.class,mealOrder.getIdMeal());
+	    
+	    for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
+		mealOrderIngredient.getIdIngredient();
+	    }
+	    
+	}
+	
+	return finalList;
+    }
+    
+    // FIXME
     @GET
     @Path("/order/{idOrder:[0-9][0-9]*}/fixstring")
     @Produces("application/json;charset=UTF8")
@@ -1008,6 +1032,15 @@ public class OrderResource extends HibernateMapper {
 	return mealsOrder;
     }
     
+    // FIXME
+    @GET
+    @Path("/order/{idOrder:[0-9][0-9]*}")
+    public void testOrderEmail(@PathParam("idOrder") Integer idOrder) throws Exception {
+	Orders order = em.find(Orders.class, idOrder);
+	sendOrderToUserEmail(order, order.getOrderPaymentMethod().get(0).getPaymentMethod());
+	System.out.println("TEST: email sent successful");
+    }
+    
     public Meal findMeal(Integer idMeal) {
 	return em.find(Meal.class, idMeal);
     }
@@ -1032,7 +1065,7 @@ public class OrderResource extends HibernateMapper {
 	log.log(Level.INFO,
 		"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()
 		+ " Waiting.");
-	notificator.send(prepareMessage(order, null, false));
+	notificator.send(prepareMessage(order, null));
     }
     
     private void sendOrderCanceledNotification(Orders order) throws Exception {
@@ -1041,7 +1074,7 @@ public class OrderResource extends HibernateMapper {
 		"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()
 		+ " Canceled.");
 	
-	notificator.send(prepareMessage(order, null, false));
+	notificator.send(prepareMessage(order, null));
     }
     
     private void sendOrderToSubsidiaryEmail(Orders order, PaymentMethod paymentMethod) throws Exception {
@@ -1049,7 +1082,7 @@ public class OrderResource extends HibernateMapper {
 	String msg = "Sending order number " + order.getTotalOrderNumber().toString() + " to subsidiary "
 		+ order.getSubsidiary().getConfiguration().getReceiveOrdersMailAddress();
 	log.log(Level.INFO, msg);
-	notificator.send(prepareMessage(order, paymentMethod, true));
+	notificator.send(prepareMessage(order, paymentMethod));
 	
     }
     
@@ -1058,10 +1091,10 @@ public class OrderResource extends HibernateMapper {
 	String msg = "Sending order number " + order.getTotalOrderNumber().toString() + " to user "
 		+ order.getUser().getEmail();
 	log.log(Level.INFO, msg);
-	notificator.send(prepareMessage(order, paymentMethod, false));
+	notificator.send(prepareMessage(order, paymentMethod));
     }
     
-    private HashMap<String, String> prepareMessage(Orders order, PaymentMethod paymentMethod, Boolean sendToSubsidiary) {
+    private HashMap<String, String> prepareMessage(Orders order, PaymentMethod paymentMethod) {
 	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
 	
 	if (OrderOrigin.SQUARE.equals(order.getOrderOrigin())) {
@@ -1083,11 +1116,7 @@ public class OrderResource extends HibernateMapper {
 	emailData.put("restaurantName", order.getSubsidiary().getName());
 	
 	if (paymentMethod != null) {
-	    if (sendToSubsidiary) {
-		emailData.put("orderData", RedeFoodMailUtil.createTableHTMLtoSubsidiaryOrderMail(order, paymentMethod));
-	    } else {
-		emailData.put("orderData", RedeFoodMailUtil.createTableHTMLtoUserOrderMail(order, paymentMethod));
-	    }
+	    emailData.put("orderData", RedeFoodMailUtil.createHTMTableData(order, paymentMethod));
 	} else {
 	    emailData.put("orderData", RedeFoodMailUtil.createTableHTMLtoPickUp(order));
 	}

@@ -21,6 +21,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -82,7 +83,7 @@ public class Rating implements Serializable {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Subsidiary subsidiary;
     @JoinColumn(name = "idOrders", referencedColumnName = "idOrders", nullable = false)
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Orders order;
     @JoinColumn(name = "idUser", referencedColumnName = "idUser", nullable = false)
     @ManyToOne(optional = false, fetch = FetchType.LAZY)

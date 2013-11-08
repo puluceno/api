@@ -39,6 +39,7 @@ import br.com.redefood.model.complex.EmailDataDTO;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.LocaleResource;
 import br.com.redefood.util.RedeFoodConstants;
+import br.com.redefood.util.RedeFoodMailUtil;
 import br.com.redefood.util.RedeFoodUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -182,7 +183,7 @@ public class RatingResource extends HibernateMapper {
 	    if (idSubsidiary != null) {
 		sub = "AND o.subsidiary.idSubsidiary = :idSubsidiary";
 	    }
-	    String query = "SELECT o FROM Orders o LEFT JOIN o.ratings r WHERE r.idRating IS NULL AND o.user.idUser = :idUser AND o.orderStatus <> 'CANCELED' "
+	    String query = "SELECT o FROM Orders o LEFT JOIN o.rating r WHERE r.idRating IS NULL AND o.user.idUser = :idUser AND o.orderStatus <> 'CANCELED' "
 		    + sub + " ORDER BY o.orderMade DESC";
 	    Query queryOrders = em.createQuery(query).setParameter("idUser", user.getId());
 	    if (idSubsidiary != null) {
@@ -264,12 +265,14 @@ public class RatingResource extends HibernateMapper {
     @POST
     @Path("/order/{idOrder:[0-9][0-9]*}/rating")
     public Response createFeedback(@HeaderParam("locale") String locale, @PathParam("idOrder") Integer idOrder,
-	    @QueryParam("originUrl") String originUrl, Rating rating) {
+	    @QueryParam("idSubsidiary") Short idSubsidiary, @QueryParam("originUrl") String originUrl, Rating rating) {
 	
 	try {
-	    log.log(Level.INFO, "Creating feedback for order " + idOrder);
-	    
 	    Orders order = em.find(Orders.class, idOrder);
+	    if (order == null || order.getRating() != null)
+		throw new Exception("Existent rating");
+	    
+	    log.log(Level.INFO, "Creating feedback for order " + idOrder);
 	    
 	    rating.setOrder(order);
 	    rating.setUser(order.getUser());
@@ -288,11 +291,12 @@ public class RatingResource extends HibernateMapper {
 	    
 	    String answer = LocaleResource.getString(locale, "feedback.created", idOrder);
 	    log.log(Level.INFO, answer);
-	    sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl));
+	    sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl, idSubsidiary));
 	    return Response.status(201).build();
 	    
 	} catch (Exception e) {
-	    return eh.genericExceptionHandlerResponse(e, locale);
+	    return eh.ratingExceptionHandlerResponse(e, locale,
+		    String.valueOf(em.find(Orders.class, idOrder).getTotalOrderNumber()));
 	}
     }
     
@@ -301,7 +305,7 @@ public class RatingResource extends HibernateMapper {
     @Path("/order/{idOrder:[0-9][0-9]*}/rating")
     public Response createFeedbackReplyAndRejoinder(@HeaderParam("locale") String locale,
 	    @PathParam("idOrder") Integer idOrder, @QueryParam("originUrl") String originUrl,
-	    HashMap<String, String> ratingReply) {
+	    @QueryParam("idSubsidiary") Short idSubsidiary, HashMap<String, String> ratingReply) {
 	
 	try {
 	    log.log(Level.INFO, "Creating feedback reply for order id " + idOrder);
@@ -318,7 +322,7 @@ public class RatingResource extends HibernateMapper {
 		rating.setReply(ratingReply.get("reply"));
 		rating.setReplyDate(new Date());
 		answer = LocaleResource.getString(locale, "feedback.reply.created", idOrder);
-		sendUserRatingNotification(prepareMessage(rating, originUrl));
+		sendUserRatingNotification(prepareMessage(rating, originUrl, idSubsidiary));
 	    }
 	    
 	    if (ratingReply.get("rejoinder") != null && !ratingReply.get("rejoinder").isEmpty()) {
@@ -329,7 +333,7 @@ public class RatingResource extends HibernateMapper {
 		rating.setRejoinder(ratingReply.get("rejoinder"));
 		rating.setRejoinderDate(new Date());
 		answer = LocaleResource.getString(locale, "feedback.rejoinder.created", idOrder);
-		sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl));
+		sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl, idSubsidiary));
 	    }
 	    
 	    log.log(Level.INFO, answer);
@@ -352,14 +356,20 @@ public class RatingResource extends HibernateMapper {
 	notificator.send(emailData);
     }
     
-    private HashMap<String, String> prepareMessage(Rating rating, String originUrl) {
+    private HashMap<String, String> prepareMessage(Rating rating, String originUrl, Short idSubsidiary) {
 	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
+	emailData.put("originUrl", originUrl);
+	
+	if (idSubsidiary != null) {
+	    RedeFoodMailUtil.prepareSubsidiaryLogoAndFooter(emailData, rating.getSubsidiary());
+	} else {
+	    RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
+	}
 	
 	emailData.put("orderNumber", String.valueOf(rating.getOrder().getTotalOrderNumber()));
 	emailData.put("userName", rating.getUser().getFirstName().toUpperCase());
-	emailData.put("ratingUrl", originUrl + RedeFoodConstants.DEFAULT_ADMIN_RATING_SUFFIX);
 	
-	emailData.put("subsidiaryName", rating.getSubsidiary().getName());
+	emailData.put("restaurantName", rating.getSubsidiary().getName());
 	emailData.put("addressee", rating.getSubsidiary().getEmail());
 	
 	if (rating.getReply() == null) {
@@ -368,11 +378,23 @@ public class RatingResource extends HibernateMapper {
 	} else if (rating.getRejoinder() == null) {
 	    emailData.put("title", RedeFoodConstants.REPLY_TITLE + emailData.get("orderNumber"));
 	    emailData.put("comment", rating.getReply());
+	    emailData.put("addressee", rating.getUser().getEmail());
+	    createUserRatingUrl(rating, idSubsidiary, emailData);
 	} else {
 	    emailData.put("title", RedeFoodConstants.REJOINDER_TITLE + emailData.get("orderNumber"));
 	    emailData.put("comment", rating.getRejoinder());
 	}
 	
 	return emailData;
+    }
+    
+    private void createUserRatingUrl(Rating rating, Short idSubsidiary, EmailDataDTO<String, String> emailData) {
+	if (idSubsidiary != null) {
+	    emailData.put("ratingUrl", RedeFoodUtils.urlBuilder(rating.getSubsidiary().getRestaurant().getSubdomain())
+		    + RedeFoodConstants.USER_RATING_URL_SUFFIX);
+	} else {
+	    emailData.put("ratingUrl", RedeFoodConstants.DEFAULT_REDEFOOD_URL
+		    + RedeFoodConstants.USER_RATING_URL_SUFFIX);
+	}
     }
 }

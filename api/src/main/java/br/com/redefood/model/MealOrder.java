@@ -28,243 +28,195 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "MealOrder", schema = "RedeFood")
 public class MealOrder implements Serializable {
-	private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Basic(optional = false)
-	@Column(name = "idMealOrder")
-	private Integer id;
-	@Basic(optional = false)
-	@Column(name = "idMeal", nullable = false)
-	private Integer idMeal;
-	@Basic(optional = false)
-	@Column(name = "name", nullable = false, length = 45)
-	private String name;
-	@Column(name = "idMealType")
-	private Integer idMealType;
-	@Column(name = "mealTypeName", length = 60)
-	private String mealTypeName;
-	@Max(value = 9999)
-	@Min(value = 0)
-	@Basic(optional = false)
-	@Column(name = "price", nullable = false, precision = 6, scale = 2)
-	private BigDecimal price;
-	@JoinColumn(name = "idOrders", referencedColumnName = "idOrders", nullable = false)
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private Orders order;
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "mealOrder", fetch = FetchType.LAZY)
-	private List<MealOrderIngredient> mealOrderIngredients;
-	@Column(name = "note")
-	private String note;
-	@Column(name = "payed")
-	private Boolean payed = false;
-
-	public MealOrder() {
-	}
-
-	public MealOrder(Integer idMealOrder) {
-		id = idMealOrder;
-	}
-
-	public MealOrder(Integer idMeal, String name, BigDecimal price, Orders order,
-			List<MealOrderIngredient> mealOrderIngredients, String note) {
-		this.idMeal = idMeal;
-		this.name = name;
-		this.price = price;
-		this.order = order;
-		this.mealOrderIngredients = mealOrderIngredients;
-		this.note = note;
-	}
-
-	public MealOrder(Integer idMeal, String name, Integer idMealType, String mealTypeName, BigDecimal price,
-			Orders order, List<MealOrderIngredient> mealOrderIngredients, String note) {
-		this.idMeal = idMeal;
-		this.name = name;
-		this.idMealType = idMealType;
-		this.mealTypeName = mealTypeName;
-		this.price = price;
-		this.order = order;
-		this.mealOrderIngredients = mealOrderIngredients;
-		this.note = note;
-	}
-
-	public MealOrder(Integer idMeal, String name, BigDecimal price) {
-		this.idMeal = idMeal;
-		this.name = name;
-		this.price = price;
-	}
-
-	public MealOrder(Integer idMeal, List<MealOrderIngredient> mealOrderIngredients) {
-		this.idMeal = idMeal;
-		this.mealOrderIngredients = mealOrderIngredients;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer idMealOrder) {
-		id = idMealOrder;
-	}
-
-	public Integer getIdMeal() {
-		return idMeal;
-	}
-
-	public void setIdMeal(Integer idMeal) {
-		this.idMeal = idMeal;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Integer getIdMealType() {
-		return idMealType;
-	}
-
-	public void setIdMealType(Integer idMealType) {
-		this.idMealType = idMealType;
-	}
-
-	public String getMealTypeName() {
-		return mealTypeName;
-	}
-
-	public void setMealTypeName(String mealTypeName) {
-		this.mealTypeName = mealTypeName;
-	}
-
-	public BigDecimal getPrice() {
-		return price;
-	}
-
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
-
-	@JsonIgnore
-	public Orders getOrders() {
-		return order;
-	}
-
-	@JsonIgnore
-	public void setOrders(Orders idOrders) {
-		order = idOrders;
-	}
-
-	public List<MealOrderIngredient> getMealOrderIngredients() {
-		return mealOrderIngredients;
-	}
-
-	public void setMealOrderIngredients(List<MealOrderIngredient> mealOrderIngredientList) {
-		mealOrderIngredients = mealOrderIngredientList;
-	}
-
-	public String getNote() {
-		return note;
-	}
-
-	public void setNote(String note) {
-		this.note = note;
-	}
-
-	public Boolean getPayed() {
-		return payed;
-	}
-
-	public void setPayed(Boolean payed) {
-		this.payed = payed;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((idMeal == null) ? 0 : idMeal.hashCode());
-		result = prime * result + ((idMealType == null) ? 0 : idMealType.hashCode());
-		result = prime * result + ((mealOrderIngredients == null) ? 0 : mealOrderIngredients.hashCode());
-		result = prime * result + ((mealTypeName == null) ? 0 : mealTypeName.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((note == null) ? 0 : note.hashCode());
-		result = prime * result + ((order == null) ? 0 : order.hashCode());
-		result = prime * result + ((payed == null) ? 0 : payed.hashCode());
-		result = prime * result + ((price == null) ? 0 : price.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MealOrder other = (MealOrder) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (idMeal == null) {
-			if (other.idMeal != null)
-				return false;
-		} else if (!idMeal.equals(other.idMeal))
-			return false;
-		if (idMealType == null) {
-			if (other.idMealType != null)
-				return false;
-		} else if (!idMealType.equals(other.idMealType))
-			return false;
-		if (mealOrderIngredients == null) {
-			if (other.mealOrderIngredients != null)
-				return false;
-		} else if (!mealOrderIngredients.equals(other.mealOrderIngredients))
-			return false;
-		if (mealTypeName == null) {
-			if (other.mealTypeName != null)
-				return false;
-		} else if (!mealTypeName.equals(other.mealTypeName))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (note == null) {
-			if (other.note != null)
-				return false;
-		} else if (!note.equals(other.note))
-			return false;
-		if (order == null) {
-			if (other.order != null)
-				return false;
-		} else if (!order.equals(other.order))
-			return false;
-		if (payed == null) {
-			if (other.payed != null)
-				return false;
-		} else if (!payed.equals(other.payed))
-			return false;
-		if (price == null) {
-			if (other.price != null)
-				return false;
-		} else if (!price.equals(other.price))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "MealOrder [id=" + id + ", idMeal=" + idMeal + ", name=" + name + ", idMealType=" + idMealType
-				+ ", mealTypeName=" + mealTypeName + ", price=" + price + ", order=" + order
-				+ ", mealOrderIngredients=" + mealOrderIngredients + ", note=" + note + ", payed=" + payed + "]";
-	}
-
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "idMealOrder")
+    private Integer id;
+    @Basic(optional = false)
+    @Column(name = "idMeal", nullable = false)
+    private Integer idMeal;
+    @Basic(optional = false)
+    @Column(name = "name", nullable = false, length = 45)
+    private String name;
+    @Column(name = "idMealType")
+    private Integer idMealType;
+    @Column(name = "mealTypeName", length = 60)
+    private String mealTypeName;
+    @Max(value = 9999)
+    @Min(value = 0)
+    @Basic(optional = false)
+    @Column(name = "price", nullable = false, precision = 6, scale = 2)
+    private BigDecimal price;
+    @JoinColumn(name = "idOrders", referencedColumnName = "idOrders", nullable = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private Orders order;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "mealOrder", fetch = FetchType.LAZY)
+    private List<MealOrderIngredient> mealOrderIngredients;
+    @Column(name = "note")
+    private String note;
+    @Column(name = "payed")
+    private Boolean payed = false;
+    
+    public MealOrder() {
+    }
+    
+    public MealOrder(Integer idMealOrder) {
+	id = idMealOrder;
+    }
+    
+    public MealOrder(Integer idMeal, String name, BigDecimal price, Orders order,
+	    List<MealOrderIngredient> mealOrderIngredients, String note) {
+	this.idMeal = idMeal;
+	this.name = name;
+	this.price = price;
+	this.order = order;
+	this.mealOrderIngredients = mealOrderIngredients;
+	this.note = note;
+    }
+    
+    public MealOrder(Integer idMeal, String name, Integer idMealType, String mealTypeName, BigDecimal price,
+	    Orders order, List<MealOrderIngredient> mealOrderIngredients, String note) {
+	this.idMeal = idMeal;
+	this.name = name;
+	this.idMealType = idMealType;
+	this.mealTypeName = mealTypeName;
+	this.price = price;
+	this.order = order;
+	this.mealOrderIngredients = mealOrderIngredients;
+	this.note = note;
+    }
+    
+    public MealOrder(Integer idMeal, String name, BigDecimal price) {
+	this.idMeal = idMeal;
+	this.name = name;
+	this.price = price;
+    }
+    
+    public MealOrder(Integer idMeal, List<MealOrderIngredient> mealOrderIngredients) {
+	this.idMeal = idMeal;
+	this.mealOrderIngredients = mealOrderIngredients;
+    }
+    
+    public Integer getId() {
+	return id;
+    }
+    
+    public void setId(Integer idMealOrder) {
+	id = idMealOrder;
+    }
+    
+    public Integer getIdMeal() {
+	return idMeal;
+    }
+    
+    public void setIdMeal(Integer idMeal) {
+	this.idMeal = idMeal;
+    }
+    
+    public String getName() {
+	return name;
+    }
+    
+    public void setName(String name) {
+	this.name = name;
+    }
+    
+    public Integer getIdMealType() {
+	return idMealType;
+    }
+    
+    public void setIdMealType(Integer idMealType) {
+	this.idMealType = idMealType;
+    }
+    
+    public String getMealTypeName() {
+	return mealTypeName;
+    }
+    
+    public void setMealTypeName(String mealTypeName) {
+	this.mealTypeName = mealTypeName;
+    }
+    
+    public BigDecimal getPrice() {
+	return price;
+    }
+    
+    public void setPrice(BigDecimal price) {
+	this.price = price;
+    }
+    
+    @JsonIgnore
+    public Orders getOrders() {
+	return order;
+    }
+    
+    @JsonIgnore
+    public void setOrders(Orders idOrders) {
+	order = idOrders;
+    }
+    
+    public List<MealOrderIngredient> getMealOrderIngredients() {
+	return mealOrderIngredients;
+    }
+    
+    public void setMealOrderIngredients(List<MealOrderIngredient> mealOrderIngredientList) {
+	mealOrderIngredients = mealOrderIngredientList;
+    }
+    
+    public String getNote() {
+	return note;
+    }
+    
+    public void setNote(String note) {
+	this.note = note;
+    }
+    
+    public Boolean getPayed() {
+	return payed;
+    }
+    
+    public void setPayed(Boolean payed) {
+	this.payed = payed;
+    }
+    
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + (idMeal == null ? 0 : idMeal.hashCode());
+	result = prime * result + (idMealType == null ? 0 : idMealType.hashCode());
+	return result;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	MealOrder other = (MealOrder) obj;
+	if (idMeal == null) {
+	    if (other.idMeal != null)
+		return false;
+	} else if (!idMeal.equals(other.idMeal))
+	    return false;
+	if (idMealType == null) {
+	    if (other.idMealType != null)
+		return false;
+	} else if (!idMealType.equals(other.idMealType))
+	    return false;
+	return true;
+    }
+    
+    @Override
+    public String toString() {
+	return "MealOrder [id=" + id + ", idMeal=" + idMeal + ", name=" + name + ", idMealType=" + idMealType
+		+ ", mealTypeName=" + mealTypeName + ", price=" + price + ", order=" + order
+		+ ", mealOrderIngredients=" + mealOrderIngredients + ", note=" + note + ", payed=" + payed + "]";
+    }
+    
 }

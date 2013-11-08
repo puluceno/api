@@ -643,6 +643,11 @@ public class RedeFoodExceptionHandler {
 	if (e.getMessage().contains("No entity found for query")) {
 	    String answer = LocaleResource.getString(locale, "exception.order.found", message[0]);
 	    log.log(Level.INFO, answer);
+	    return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
+	}
+	if (e.getMessage().contains("Existent rating")) {
+	    String answer = LocaleResource.getString(locale, "exception.rating.exists", message[0]);
+	    log.log(Level.INFO, answer);
 	    return RedeFoodAnswerGenerator.generateErrorAnswer(401, answer);
 	}
 	if (e.getMessage().contains("Existent reply")) {

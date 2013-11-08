@@ -136,7 +136,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                     <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
-                          {6}, o estabelecimento {2} foi respondeu ao seu comentário relativo ao pedido número {5}.
+                          {6}, o estabelecimento {12} respondeu ao seu comentário relativo ao pedido número {5}.
                         </td>
                       </tr>
                     </table>
@@ -199,14 +199,14 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
             
                             <tr>
                               <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">
-                                <a href={8}> <b>Sistema de ajuda {2}</b></a>
+                                <a href={9}> <b>Sistema de ajuda {2}</b></a>
                               </td>
                             </tr>
                             <tr>
-                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{9}</td>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{10}</td>
                             </tr>
                             <tr>
-                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{10}</td>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{11}</td>
                             </tr>
                           </table>
                           <!-- end right -->

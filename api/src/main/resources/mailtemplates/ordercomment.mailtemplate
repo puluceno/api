@@ -199,14 +199,14 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
             
                             <tr>
                               <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">
-                                <a href={8}> <b>Sistema de ajuda {2}</b></a>
+                                <a href={9}> <b>Sistema de ajuda {2}</b></a>
                               </td>
                             </tr>
                             <tr>
-                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{9}</td>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{10}</td>
                             </tr>
                             <tr>
-                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{10}</td>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">{11}</td>
                             </tr>
                           </table>
                           <!-- end right -->

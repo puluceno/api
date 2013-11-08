@@ -1,6 +1,12 @@
 package br.com.redefood.util;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import br.com.redefood.model.BeverageOrder;
 import br.com.redefood.model.MealOrder;
@@ -12,7 +18,7 @@ import br.com.redefood.model.complex.EmailDataDTO;
 
 public class RedeFoodMailUtil {
     
-    public static String createTableHTMLtoUserOrderMail(final Object... objects) {
+    public static String createHTMTableData(final Object... objects) {
 	Orders order = (Orders) objects[0];
 	
 	StringBuilder table = new StringBuilder();
@@ -26,58 +32,80 @@ public class RedeFoodMailUtil {
 	
 	table.append("</th></thead><tbody><tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\"><b>Pratos</b></td><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\"><b>Quantidade</b></td><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\"><b>Valor unit&aacute;rio</b></td></tr>");
 	
-	for (MealOrder mealOrder : order.getMealsOrder()) {
+	Map<String, List<MealOrder>> map = new HashMap<String, List<MealOrder>>();
+	for (MealOrder mo : order.getMealsOrder()) {
 	    
-	    table.append("<tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
+	    // begin teste
+	    String key = mo.getMealTypeName();
+	    if (map.get(key) == null) {
+		map.put(key, new ArrayList<MealOrder>());
+	    }
+	    map.get(key).add(mo);
+	}
+	Set<Entry<String, List<MealOrder>>> entrySet = map.entrySet();
+	for (Entry<String, List<MealOrder>> entry : entrySet) {
+	    // Meal Type name
+	    table.append("<tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top; font-style:italic\" colspan=\"3\">");
 	    table.append("<strong>");
-	    table.append(mealOrder.getName());
+	    table.append("Categoria: " + entry.getKey());
 	    table.append("</strong>");
-	    
-	    // Meal optionals
-	    if (mealOrder.getMealOrderIngredients() != null && !mealOrder.getMealOrderIngredients().isEmpty()) {
+	    table.append("</td></tr>");
+	    for (MealOrder mealOrder : map.get(entry.getKey())) {
+		
+		// Meal name
+		table.append("<tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
+		table.append("<strong>");
+		table.append(mealOrder.getName());
+		table.append("</strong>");
+		
+		// Meal optionals
+		if (mealOrder.getMealOrderIngredients() != null && !mealOrder.getMealOrderIngredients().isEmpty()) {
+		    table.append("<br/>");
+		    table.append("<strong>Opcionais: </strong>");
+		    for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
+			table.append("<br/>");
+			table.append(mealOrderIngredient.getName());
+		    }
+		}
+		
+		// Meal notes
+		if (mealOrder.getNote() != null && !mealOrder.getNote().isEmpty()) {
+		    table.append("<br/> <strong>Obs: </strong>");
+		    table.append(mealOrder.getNote());
+		}
+		table.append("</td>");
+		
+		// Quantity
+		table.append("<td style=\"text-align: center; border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
+		table.append("1");
 		table.append("<br/>");
-		table.append("<strong>Opcionais: </strong>");
+		for (int i = 0; i < mealOrder.getMealOrderIngredients().size(); i++) {
+		    table.append("<br/>");
+		    table.append("1");
+		}
+		table.append("</td>");
+		
+		// Meal and ingredients Price
+		table.append("<td style=\"text-align: center; border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
+		table.append("<strong>");
+		table.append(RedeFoodUtils.moneyFormatter(mealOrder.getPrice()));
+		table.append("</strong>");
+		table.append("<br/>");
 		for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
 		    table.append("<br/>");
-		    table.append(mealOrderIngredient.getName());
-		}
-	    }
-	    
-	    // Meal notes
-	    if (mealOrder.getNote() != null && !mealOrder.getNote().isEmpty()) {
-		table.append("<br/> <strong>Obs: </strong>");
-		table.append(mealOrder.getNote());
-	    }
-	    table.append("</td>");
-	    
-	    // Quantity
-	    table.append("<td style=\"text-align: center; border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
-	    table.append("1");
-	    table.append("<br/>");
-	    for (int i = 0; i < mealOrder.getMealOrderIngredients().size(); i++) {
-		table.append("<br/>");
-		table.append("1");
-	    }
-	    table.append("</td>");
-	    
-	    // Meal and ingredients Price
-	    table.append("<td style=\"text-align: center; border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
-	    table.append("<strong>");
-	    table.append(RedeFoodUtils.moneyFormatter(mealOrder.getPrice()));
-	    table.append("</strong>");
-	    table.append("<br/>");
-	    for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
-		table.append("<br/>");
-		if (mealOrderIngredient.getPrice() > 0.0) {
-		    table.append("<strong>");
-		    table.append(RedeFoodUtils.moneyFormatter(mealOrderIngredient.getPrice()));
-		    table.append("</strong>");
-		} else {
-		    table.append(RedeFoodUtils.moneyFormatter(mealOrderIngredient.getPrice()));
+		    if (mealOrderIngredient.getPrice() > 0.0) {
+			table.append("<strong>");
+			table.append(RedeFoodUtils.moneyFormatter(mealOrderIngredient.getPrice()));
+			table.append("</strong>");
+		    } else {
+			table.append(RedeFoodUtils.moneyFormatter(mealOrderIngredient.getPrice()));
+		    }
+		    
 		}
 		
 	    }
-	}
+	    
+	}// closes Food 'for'
 	
 	table.append("</td></tr>");
 	if (order.getBeveragesOrder() != null && !order.getBeveragesOrder().isEmpty()) {
@@ -164,7 +192,7 @@ public class RedeFoodMailUtil {
 	
     }
     
-    public static String createTableHTMLtoSubsidiaryOrderMail(final Object... objects) {
+    /*public static String createTableHTMLtoSubsidiaryOrderMail(final Object... objects) {
 	Orders order = (Orders) objects[0];
 	
 	StringBuilder table = new StringBuilder();
@@ -179,7 +207,15 @@ public class RedeFoodMailUtil {
 	table.append("</th></thead><tbody><tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\"><b>Pratos</b></td><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\"><b>Quantidade</b></td><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\"><b>Valor unit&aacute;rio</b></td></tr>");
 	
 	for (MealOrder mealOrder : order.getMealsOrder()) {
+	    // TEST MEAL TYPE NAME
+	    table.append("<tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
+	    table.append("<strong>");
+	    table.append(mealOrder.getMealTypeName());
+	    table.append("</strong>");
+	    table.append("</td></tr>");
+	    // FINISH TEST MEAL TYPE NAME
 	    
+	    // Meal name
 	    table.append("<tr><td style=\"border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;\">");
 	    table.append("<strong>");
 	    table.append(mealOrder.getName());
@@ -283,7 +319,7 @@ public class RedeFoodMailUtil {
 		    + ", "
 		    + order.getAddress().getNumber()
 		    + (order.getAddress().getComplement() != null && !order.getAddress().getComplement().isEmpty() ? " - "
-			    .concat(order.getAddress().getComplement()) : "") + "; "
+			    .concat(order.getAddress().getComplement()) : "") + ";"
 			    + order.getAddress().getNeighborhood().getName() + " - " + order.getAddress().getCity().getName());
 	    table.append("</td></tr>");
 	}
@@ -308,7 +344,7 @@ public class RedeFoodMailUtil {
 	table.append("</tbody></table>");
 	
 	return table.toString();
-    }
+    }*/
     
     public static String createTableHTMLtoPickUp(Orders order) {
 	
@@ -341,6 +377,7 @@ public class RedeFoodMailUtil {
 		+ "\"");
 	emailData.put("contactEmail", RedeFoodConstants.REDEFOOD_SUPPORT_EMAIL);
 	emailData.put("footerSlogan", RedeFoodConstants.REDEFOOD_SLOGAN);
+	emailData.put("ratingUrl", emailData.get("originUrl") + RedeFoodConstants.DEFAULT_ADMIN_RATING_SUFFIX);
     }
     
     /**
@@ -364,6 +401,7 @@ public class RedeFoodMailUtil {
 	emailData.put("contactEmail", subsidiary.getEmail());
 	emailData.put("footerSlogan", subsidiary.getRestaurant().getSlogan() == null ? "" : subsidiary.getRestaurant()
 		.getSlogan());
+	emailData.put("ratingUrl", emailData.get("originUrl") + RedeFoodConstants.DEFAULT_ADMIN_RATING_SUFFIX);
     }
     
 }

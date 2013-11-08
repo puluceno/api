@@ -69,7 +69,7 @@ public class UserCommentReceivedNotificator extends Notificator {
 		emailData.get("subsidiaryName"), emailData.get("facebook"), emailData.get("title"),
 		emailData.get("orderNumber"), emailData.get("userName"), emailData.get("comment"),
 		emailData.get("ratingUrl"), emailData.get("urlHelp"), emailData.get("contactEmail"),
-		emailData.get("footerSlogan"));
+		emailData.get("footerSlogan"), emailData.get("restaurantName"));
 	
 	// cria a mensagem
 	MessageNotificator notificacao = new MessageNotificator(emailData.get("addressee"));

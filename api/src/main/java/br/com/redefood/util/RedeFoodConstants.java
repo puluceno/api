@@ -241,4 +241,9 @@ public class RedeFoodConstants {
      */
     public static final String REJOINDER_TITLE = "Seu estabelecimento recebeu uma tréplica para o pedido número ";
     
+    /**
+     * Default url suffix for users to see their ratings
+     */
+    public static final String USER_RATING_URL_SUFFIX = "/account/orders";
+    
 } // fim da classe RedeFoodConstants

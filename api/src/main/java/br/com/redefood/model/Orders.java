@@ -25,6 +25,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -56,9 +57,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
     @NamedQuery(name = "Orders.findByOrderStatusAndTime", query = "SELECT DISTINCT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus = :orderStatus AND o.orderMade >= :fetchTime ORDER BY o.orderMade DESC"),
     @NamedQuery(name = "Orders.findOrdersBySubsidiaryAndType", query = "SELECT DISTINCT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderMade >= :orderTime AND o.orderType.idOrderType =:idOrderType ORDER BY o.orderMade DESC"),
     @NamedQuery(name = "Orders.findOrdersBySubsidiaryAndTime", query = "SELECT DISTINCT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderMade >= :orderTime ORDER BY o.orderMade DESC"),
-    @NamedQuery(name = "Orders.findAvailableToRateByUser", query = "SELECT o FROM Orders o LEFT JOIN o.ratings r WHERE r.idRating IS NULL AND o.user.idUser = :idUser AND o.orderStatus <> 'CANCELED'"),
+    @NamedQuery(name = "Orders.findAvailableToRateByUser", query = "SELECT o FROM Orders o LEFT JOIN o.rating r WHERE r.idRating IS NULL AND o.user.idUser = :idUser AND o.orderStatus <> 'CANCELED'"),
     @NamedQuery(name = Orders.FIND_TOTAL_ORDER_NUMBER_BY_SUBSIDIARY, query = "SELECT MAX(COALESCE(o.totalOrderNumber,0)) FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus <> 'CANCELED'"),
-    @NamedQuery(name = "Orders.findAvailableToRateByOrder", query = "SELECT o FROM Orders o LEFT JOIN o.ratings r WHERE r.idRating IS NULL AND o.idOrders = :idOrders AND o.user.idUser = :idUser AND o.orderStatus <> 'CANCELED'"),
+    @NamedQuery(name = "Orders.findAvailableToRateByOrder", query = "SELECT o FROM Orders o LEFT JOIN o.rating r WHERE r.idRating IS NULL AND o.idOrders = :idOrders AND o.user.idUser = :idUser AND o.orderStatus <> 'CANCELED'"),
     @NamedQuery(name = "Orders.findCanceledBySubsidiaryAndDate", query = "SELECT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderMade BETWEEN :from AND :to AND o.orderStatus = 'CANCELED'"),
     @NamedQuery(name = "Orders.findByOrderAndBoard", query = "SELECT o FROM Orders o WHERE o.idOrders = :idOrders AND o.subsidiary.idSubsidiary = :idSubsidiary AND o.board.idBoard = :idBoard AND o.orderStatus <> 'CANCELED'"),
     @NamedQuery(name = "Orders.findOpenOrderByBoard", query = "SELECT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.board.idBoard = :idBoard AND o.boardPayed=false"),
@@ -188,8 +189,8 @@ public class Orders implements Serializable {
     @JoinColumn(name = "idAddress", referencedColumnName = "idAddress")
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Address address;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order", fetch = FetchType.LAZY)
-    private List<Rating> ratings;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "order", fetch = FetchType.LAZY)
+    private Rating rating;
     @Column(name = "localOrderNumber")
     private Integer localOrderNumber;
     @Column(name = "orderChange", precision = 5, scale = 2)
@@ -379,12 +380,12 @@ public class Orders implements Serializable {
 	this.address = address;
     }
     
-    public List<Rating> getRatings() {
-	return ratings;
+    public Rating getRating() {
+	return rating;
     }
     
-    public void setRatings(List<Rating> ratings) {
-	this.ratings = ratings;
+    public void setRating(Rating rating) {
+	this.rating = rating;
     }
     
     public Integer getLocalOrderNumber() {
