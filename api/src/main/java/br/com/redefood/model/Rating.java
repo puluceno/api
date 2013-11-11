@@ -28,6 +28,7 @@ import javax.persistence.TemporalType;
 
 import br.com.redefood.provider.CustomJsonDateSerializer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -205,6 +206,7 @@ public class Rating implements Serializable {
 	this.subsidiary = subsidiary;
     }
     
+    @JsonIgnore
     public Orders getOrder() {
 	return order;
     }

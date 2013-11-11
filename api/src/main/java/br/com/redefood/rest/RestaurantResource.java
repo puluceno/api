@@ -325,7 +325,7 @@ public class RestaurantResource extends HibernateMapper {
 	subsidiaryModules.add(subModule);
 	subsidiary.setSubsidiaryModules(subsidiaryModules);
 	
-	if (module.getId().intValue() == 1) {
+	if (module.getId() == Module.MODULE_LOCAL) {
 	    OrderType orderType1 = em.find(OrderType.class, OrderType.LOCAL);
 	    OrderType orderType2 = em.find(OrderType.class, OrderType.LOCAL_TO_GO);
 	    List<OrderType> ot = new ArrayList<OrderType>();
@@ -333,7 +333,7 @@ public class RestaurantResource extends HibernateMapper {
 	    ot.add(orderType2);
 	    subsidiary.setOrderTypes(ot);
 	}
-	if (module.getId().intValue() == 2 || module.getId().intValue() == 3) {
+	if (module.getId() == Module.MODULE_SQUARE || module.getId() == Module.MODULE_SITE) {
 	    OrderType orderType1 = em.find(OrderType.class, OrderType.DELIVERY_ONLINE);
 	    // Em breve será fornecido o tipo Agendamento Online, ainda
 	    // não disponível.

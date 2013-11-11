@@ -1112,7 +1112,7 @@ public class OrderResource extends HibernateMapper {
 	emailData.put("userEmail", order.getUser().getEmail());
 	emailData.put("subsidiaryEmail", order.getSubsidiary().getConfiguration().getReceiveOrdersMailAddress());
 	emailData.put("orderNumber", String.valueOf(order.getTotalOrderNumber()));
-	emailData.put("orderMade", RedeFoodUtils.formatDate(order.getOrderMade()));
+	emailData.put("orderMade", RedeFoodUtils.formatDateTime(order.getOrderMade()));
 	emailData.put("restaurantName", order.getSubsidiary().getName());
 	
 	if (paymentMethod != null) {

@@ -126,7 +126,6 @@ public class RatingResource extends HibernateMapper {
 	}
     }
     
-    @SuppressWarnings("unchecked")
     @Securable
     @GET
     @Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}/rating")
@@ -135,13 +134,39 @@ public class RatingResource extends HibernateMapper {
 	    @PathParam("idOrder") Integer idOrder) {
 	
 	try {
-	    List<Rating> ratings = em.createNamedQuery(Rating.FIND_BY_ORDER).setParameter("idOrder", idOrder)
-		    .getResultList();
+	    Rating rating = (Rating) em.createNamedQuery(Rating.FIND_BY_ORDER).setParameter("idOrder", idOrder)
+		    .getSingleResult();
 	    
-	    return mapper.writeValueAsString(ratings);
+	    HashMap<String, Object> json = new HashMap<String, Object>();
+	    json.put("delivery", rating.getDelivery());
+	    json.put("costBenefit", rating.getCostBenefit());
+	    json.put("experience", rating.getExperience());
+	    json.put("orderMade", RedeFoodUtils.formatDateTime(rating.getOrder().getOrderMade()));
+	    json.put("comment", rating.getComment());
+	    json.put("ratingDate", RedeFoodUtils.formatDateOnly(rating.getRatingDate()));
+	    json.put("reply", rating.getReply());
+	    json.put("replyDate", RedeFoodUtils.formatDateOnly(rating.getReplyDate()));
+	    json.put("rejoinder", rating.getRejoinder());
+	    json.put("rejoinderDate", RedeFoodUtils.formatDateOnly(rating.getRejoinderDate()));
+	    json.put("id", rating.getIdRating());
+	    json.put("idOrder", rating.getOrder().getId());
+	    json.put("orderNumber", rating.getOrder().getTotalOrderNumber());
+	    
+	    List<HashMap<String, Object>> listMealRating = new ArrayList<HashMap<String, Object>>();
+	    for (MealRating mealRating : rating.getMealRatings()) {
+		HashMap<String, Object> mr = new HashMap<String, Object>();
+		mr.put("id", mealRating.getIdMealRating());
+		mr.put("comment", mealRating.getComment());
+		mr.put("mealRating", mealRating.getMealRating());
+		mr.put("name", mealRating.getMeal().getName());
+		listMealRating.add(mr);
+	    }
+	    json.put("mealRatings", listMealRating);
+	    
+	    return mapper.writeValueAsString(json);
 	    
 	} catch (Exception e) {
-	    return eh.ratingExceptionHandler(e, locale);
+	    return eh.ratingExceptionHandlerResponse(e, locale, String.valueOf(idOrder)).getEntity().toString();
 	}
     }
     
@@ -375,26 +400,36 @@ public class RatingResource extends HibernateMapper {
 	if (rating.getReply() == null) {
 	    emailData.put("title", RedeFoodConstants.COMMENT_TITLE + emailData.get("orderNumber"));
 	    emailData.put("comment", rating.getComment());
+	    createUserRatingUrl(rating, idSubsidiary, emailData, RedeFoodConstants.ADMIN_COMMENT_ANSWER_MSG,
+		    RedeFoodConstants.DEFAULT_ADMIN_RATING_SUFFIX);
 	} else if (rating.getRejoinder() == null) {
 	    emailData.put("title", RedeFoodConstants.REPLY_TITLE + emailData.get("orderNumber"));
 	    emailData.put("comment", rating.getReply());
 	    emailData.put("addressee", rating.getUser().getEmail());
-	    createUserRatingUrl(rating, idSubsidiary, emailData);
+	    createUserRatingUrl(rating, idSubsidiary, emailData, RedeFoodConstants.USER_REPLY_ANSWER_MSG,
+		    RedeFoodConstants.USER_RATING_URL_SUFFIX);
 	} else {
 	    emailData.put("title", RedeFoodConstants.REJOINDER_TITLE + emailData.get("orderNumber"));
 	    emailData.put("comment", rating.getRejoinder());
+	    createUserRatingUrl(rating, idSubsidiary, emailData, RedeFoodConstants.ADMIN_REJOINDER_ANSWER_MSG,
+		    RedeFoodConstants.DEFAULT_ADMIN_RATING_SUFFIX);
 	}
 	
 	return emailData;
     }
     
-    private void createUserRatingUrl(Rating rating, Short idSubsidiary, EmailDataDTO<String, String> emailData) {
+    private void createUserRatingUrl(Rating rating, Short idSubsidiary, EmailDataDTO<String, String> emailData,
+	    String msg, String suffix) {
 	if (idSubsidiary != null) {
-	    emailData.put("ratingUrl", RedeFoodUtils.urlBuilder(rating.getSubsidiary().getRestaurant().getSubdomain())
-		    + RedeFoodConstants.USER_RATING_URL_SUFFIX);
+	    emailData.put(
+		    "ratingUrl",
+		    msg.replace("*", RedeFoodUtils.urlBuilder(rating.getSubsidiary().getRestaurant().getSubdomain())
+			    + suffix));
 	} else {
-	    emailData.put("ratingUrl", RedeFoodConstants.DEFAULT_REDEFOOD_URL
-		    + RedeFoodConstants.USER_RATING_URL_SUFFIX);
+	    emailData
+	    .put("ratingUrl",
+		    msg.replace("*", RedeFoodConstants.DEFAULT_REDEFOOD_URL
+			    + RedeFoodConstants.USER_RATING_URL_SUFFIX));
 	}
     }
 }

@@ -237,7 +237,8 @@ public class RedeFoodConstants {
     public static final String REPLY_TITLE = "Você recebeu uma resposta para seu comentário do pedido número ";
     
     /**
-     * Default email title when a subsidiary receives a rejoinder from a {@link Rating}
+     * Default email title when a subsidiary receives a rejoinder from a
+     * {@link Rating}
      */
     public static final String REJOINDER_TITLE = "Seu estabelecimento recebeu uma tréplica para o pedido número ";
     
@@ -245,5 +246,20 @@ public class RedeFoodConstants {
      * Default url suffix for users to see their ratings
      */
     public static final String USER_RATING_URL_SUFFIX = "/account/orders";
+    
+    /**
+     * Default message to admin when he receives a comment.
+     */
+    public static final String ADMIN_COMMENT_ANSWER_MSG = "Caso você queira, você pode realizar uma réplica ao comentário do cliente. Para isto, basta <a href=*>clicar aqui!</a>";
+    
+    /**
+     * Default message to user when he receives a comment.
+     */
+    public static final String USER_REPLY_ANSWER_MSG = "Caso você queira, você pode entrar realizar uma tréplica à resposta do estabelecimento. Para isto, basta <a href=*>clicar aqui!</a>";
+    
+    /**
+     * Default message to user when he receives a comment.
+     */
+    public static final String ADMIN_REJOINDER_ANSWER_MSG = "Veja suas avaliações <a href=*>clicando aqui!</a>";
     
 } // fim da classe RedeFoodConstants

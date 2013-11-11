@@ -165,7 +165,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                       <tr>
                         <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
                           
-                          Caso você queira, você pode entrar realizar uma tréplica à resposta do estabelecimento. Para isto, basta <a href={8}>clicar aqui!</a>
+                          {8}
 
                         </td>
                       </tr>

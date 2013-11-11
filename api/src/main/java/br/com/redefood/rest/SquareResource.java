@@ -47,7 +47,7 @@ public class SquareResource extends HibernateMapper {
     private RedeFoodExceptionHandler eh;
     
     @SuppressWarnings("unchecked")
-    //@Cache(maxAge = 10)
+    // @Cache(maxAge = 10)
     @GET
     @Produces("application/json;charset=UTF8")
     public String populateSquareRestaurants(@HeaderParam("locale") String locale,
@@ -78,6 +78,8 @@ public class SquareResource extends HibernateMapper {
 	    query.append(",");
 	    query.append(Module.MODULE_SITE);
 	    query.append(") ");
+	    // Square active parameter
+	    query.append(" AND s.squareActive = true ");
 	    // Online OpenTime clause
 	    query.append("AND ot.localOpenTime = false ");
 	    // Restaurant name filter

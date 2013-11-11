@@ -11,11 +11,13 @@ import java.util.Locale;
 public final class RedeFoodUtils {
     
     public static SimpleDateFormat getDateFormat() {
-	return new SimpleDateFormat("dd/MM/yyyy' 'HH:mm:ss");
+	return new SimpleDateFormat("dd/MM/yyyy' - 'HH:mm:ss");
     }
     
-    public static String formatDate(Date date) {
-	return getDateFormat().format(date);
+    public static String formatDateTime(Date date) {
+	if (date != null)
+	    return getDateFormat().format(date);
+	return null;
     }
     
     public static SimpleDateFormat getDateOnlyFormat() {
@@ -23,7 +25,9 @@ public final class RedeFoodUtils {
     }
     
     public static String formatDateOnly(Date date) {
-	return getDateOnlyFormat().format(date);
+	if (date != null)
+	    return getDateOnlyFormat().format(date);
+	return null;
     }
     
     public static final String doHash(String toHash) {

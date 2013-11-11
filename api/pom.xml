@@ -245,7 +245,6 @@
 			<version>1.6.11</version>
 		</dependency>
 
-
 		<!-- <dependency> -->
 		<!-- <groupId>org.jboss.resteasy</groupId> -->
 		<!-- <artifactId>resteasy-cache-core</artifactId> -->

@@ -51,17 +51,17 @@ public class Module implements Serializable {
     /**
      * Default name for Local Module, code 1, Local.
      */
-    public static final Integer MODULE_LOCAL = 1;
+    public static final Short MODULE_LOCAL = 1;
     
     /**
      * Default name for Online Module, code 2, Square.
      */
-    public static final Integer MODULE_SQUARE = 2;
+    public static final Short MODULE_SQUARE = 2;
     
     /**
-     * Default name for Square and Private Store Module, code 3, Site + Square
+     * Default name for Private Store Module, code 3, Site
      */
-    public static final Integer MODULE_SITE = 3;
+    public static final Short MODULE_SITE = 3;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

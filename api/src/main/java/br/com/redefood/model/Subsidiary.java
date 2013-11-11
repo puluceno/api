@@ -56,7 +56,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
     @NamedQuery(name = Subsidiary.FIND_AVG_PREPARETIME, query = "SELECT AVG(TIME_TO_SEC(TIMEDIFF(o.orderSent, o.orderMade))) FROM Orders o WHERE o.orderSent IS NOT NULL AND o.orderMade BETWEEN :from AND :to AND o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus <> 'CANCELED'"),
     @NamedQuery(name = Subsidiary.FIND_MAX_PREPARETIME, query = "SELECT MAX(TIME_TO_SEC(TIMEDIFF(o.orderSent, o.orderMade))) FROM Orders o WHERE o.orderSent IS NOT NULL AND o.orderMade BETWEEN :from AND :to AND o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus <> 'CANCELED'"),
     @NamedQuery(name = Subsidiary.FIND_MIN_PREPARETIME, query = "SELECT MIN(TIME_TO_SEC(TIMEDIFF(o.orderSent, o.orderMade))) FROM Orders o WHERE o.orderSent IS NOT NULL AND o.orderMade BETWEEN :from AND :to AND o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus <> 'CANCELED'"),
-    @NamedQuery(name = Subsidiary.FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID, query = "SELECT s.email FROM Subsidiary s JOIN s.employeeList e WHERE e.idEmployee = :idEmployee")})
+    @NamedQuery(name = Subsidiary.FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID, query = "SELECT s.email FROM Subsidiary s JOIN s.employeeList e WHERE e.idEmployee = :idEmployee") })
 public class Subsidiary implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -74,7 +74,6 @@ public class Subsidiary implements Serializable {
     public static final String FIND_MAX_PREPARETIME = "FIND_MAX_PREPARETIME";
     public static final String FIND_MIN_PREPARETIME = "FIND_MIN_PREPARETIME";
     public static final String FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID = "FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID";
-    
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -123,6 +122,8 @@ public class Subsidiary implements Serializable {
     private Boolean active;
     @Column(name = "denied")
     private Boolean denied;
+    @Column(name = "squareActive")
+    private Boolean squareActive;
     @Column(name = "insertDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date insertDate;
@@ -375,6 +376,14 @@ public class Subsidiary implements Serializable {
     
     public void setDenied(Boolean denied) {
 	this.denied = denied;
+    }
+    
+    public Boolean getSquareActive() {
+	return squareActive;
+    }
+    
+    public void setSquareActive(Boolean squareActive) {
+	this.squareActive = squareActive;
     }
     
     public Date getInsertDate() {
