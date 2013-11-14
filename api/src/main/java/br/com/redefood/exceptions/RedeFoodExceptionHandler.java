@@ -670,7 +670,7 @@ public class RedeFoodExceptionHandler {
     
     public Response userExceptionHandler(Exception e, String locale, String... message) {
 	if (e.getMessage().contentEquals("invalid cpf")) {
-	    String answer = LocaleResource.getProperty(locale).getProperty("exception.cpf.invalid");
+	    String answer = LocaleResource.getString(locale, "exception.cpf.invalid", message[1]);
 	    log.log(Level.INFO, answer);
 	    return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 	}
@@ -869,8 +869,8 @@ public class RedeFoodExceptionHandler {
 	return genericExceptionHandlerResponse(e, locale);
     }
     
-    public String cepExceptionHandler(Exception e, String locale) {
-	String answer = LocaleResource.getProperty(locale).getProperty("exception.cep.found");
+    public String cepExceptionHandler(Exception e, String locale, String... message) {
+	String answer = LocaleResource.getString(locale, "exception.cep.found", message[0]);
 	log.log(Level.WARNING, answer);
 	return RedeFoodAnswerGenerator.generateErrorAnswerString(401, answer);
     }

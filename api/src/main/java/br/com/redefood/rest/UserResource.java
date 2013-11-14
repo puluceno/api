@@ -160,7 +160,7 @@ public class UserResource extends HibernateMapper {
 	    return RedeFoodAnswerGenerator.generateSuccessAnswer(201, answer);
 	    
 	} catch (Exception e) {
-	    return eh.userExceptionHandler(e, locale, user.getEmail());
+	    return eh.userExceptionHandler(e, locale, user.getEmail(), user.getCpf());
 	}
     }
     
@@ -446,9 +446,10 @@ public class UserResource extends HibernateMapper {
      */
     private User validateCreate(User user) throws Exception {
 	
-	if (user.getCpf() != null && user.getCpf().length() >= 11)
-	    if (!CPFValidator.isCPF(user.getCpf()))
-		throw new Exception("invalid cpf");
+	if (!CPFValidator.isCPF(user.getCpf()))
+	    throw new Exception("invalid cpf");
+	// This is to ensure that all cpf go to DB formatted.
+	user.setCpf(CPFValidator.getValidCpf(user.getCpf()));
 	
 	SecureRandom random = new SecureRandom();
 	user.setPassword(new BigInteger(30, random).toString(32));

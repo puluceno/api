@@ -69,11 +69,11 @@ public class NewFacebookUserNotificator extends Notificator {
 	String conteudo = MessageFormat.format(template, emailData.get("subsidiaryUrl"), emailData.get("logo"),
 		emailData.get("subsidiaryName"), emailData.get("facebook"), emailData.get("userName"),
 		emailData.get("userPass"), emailData.get("urlHelp"), emailData.get("contactEmail"),
-		emailData.get("footerSlogan"));
+		emailData.get("footerSlogan"), emailData.get("origin"));
 	
 	// cria a mensagem
 	MessageNotificator notificacao = new MessageNotificator(emailData.get("addressee"));
-	notificacao.setAssunto("[" + emailData.get("subsidiaryName") + "] - Recuperar senha");
+	notificacao.setAssunto("[" + emailData.get("subsidiaryName") + "] - Bem vindo");
 	notificacao.setConteudo(conteudo);
 	
 	return notificacao;

@@ -22,17 +22,17 @@ import javax.persistence.PersistenceContextType;
  * </pre>
  */
 public class Resources {
-	@Produces
-	@PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "RedeFood")
-	private EntityManager em;
-
-	public EntityManager produceEntityManager() {
-		return em;
-	}
-
-	@Produces
-	public Logger produceLog(InjectionPoint injectionPoint) {
-		return Logger.getLogger(injectionPoint.getMember().getDeclaringClass()
-				.getName());
-	}
+    @Produces
+    @PersistenceContext(type = PersistenceContextType.EXTENDED, unitName = "RedeFood")
+    private EntityManager em;
+    
+    public EntityManager produceEntityManager() {
+	return em;
+    }
+    
+    @Produces
+    public Logger produceLog(InjectionPoint injectionPoint) {
+	return Logger.getLogger(injectionPoint.getMember().getDeclaringClass().getName());
+    }
+    
 }

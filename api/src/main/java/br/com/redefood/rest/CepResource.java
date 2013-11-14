@@ -60,7 +60,7 @@ public class CepResource extends HibernateMapper {
      */
     @GET
     @Produces("application/json;charset=UTF8")
-    public String FindCep(@HeaderParam("locale") String locale, @QueryParam("cep") String cep) {
+    public String findCep(@HeaderParam("locale") String locale, @QueryParam("cep") String cep) {
 	
 	Webservicecep addressFound = null;
 	Address address = new Address();
@@ -73,7 +73,7 @@ public class CepResource extends HibernateMapper {
 		throw new Exception();
 	    
 	} catch (Exception e) {
-	    return eh.cepExceptionHandler(e, locale);
+	    return eh.cepExceptionHandler(e, locale, cep);
 	    
 	}
 	
@@ -98,7 +98,7 @@ public class CepResource extends HibernateMapper {
 	    if (city.getNeighborhoods().isEmpty()) {
 		registerNeighborhoodsToNewCity(city);
 	    } else {
-		String answer = LocaleResource.getProperty(locale).getProperty("exception.cep.data");
+		String answer = LocaleResource.getString(locale, "exception.cep.data", cep);
 		log.log(Level.WARNING, answer);
 		return RedeFoodAnswerGenerator.generateErrorAnswerString(401, answer);
 	    }

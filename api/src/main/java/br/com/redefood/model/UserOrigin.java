@@ -22,6 +22,7 @@ public class UserOrigin implements Serializable {
     public static final Short FACEBOOK = 1;
     public static final Short SQUARE = 2;
     public static final Short STORE = 3;
+    public static final Short GOOGLE = 4;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

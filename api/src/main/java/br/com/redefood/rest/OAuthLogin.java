@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -29,6 +31,8 @@ import br.com.redefood.model.Notifications;
 import br.com.redefood.model.Subsidiary;
 import br.com.redefood.model.UserOrigin;
 import br.com.redefood.model.complex.EmailDataDTO;
+import br.com.redefood.model.complex.GoogleUserDTO;
+import br.com.redefood.util.GoogleAuthHelper;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.LocaleResource;
 import br.com.redefood.util.RedeFoodAnswerGenerator;
@@ -44,147 +48,231 @@ import com.restfb.types.User;
 @Stateless
 @Path("/login/oauth")
 public class OAuthLogin extends HibernateMapper {
-    private static final ObjectMapper mapper = HibernateMapper.getMapper();
-    @Inject
-    private EntityManager em;
-    @Inject
-    private Logger log;
-    @Inject
-    private RedeFoodExceptionHandler eh;
-    
-    @POST
-    @Path("/facebook")
-    @Produces("application/json;charset=UTF8")
-    public Response facebookLogin(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary,
-	    String accessToken) {
-	
-	br.com.redefood.model.User user = null;
-	try {
-	    String fbToken = prepareAccessToken(accessToken);
-	    FacebookClient facebookClient = new DefaultFacebookClient(fbToken);
-	    User facebookUser = facebookClient.fetchObject("me", User.class);
-	    
-	    try {
-		user = (br.com.redefood.model.User) em.createNamedQuery(br.com.redefood.model.User.FIND_USER_BY_EMAIL)
-			.setParameter("email", facebookUser.getEmail()).getSingleResult();
-	    } catch (Exception e) {
-		if (user == null) {
-		    user = createFacebookUser(facebookUser, idSubsidiary);
+	private static final ObjectMapper mapper = HibernateMapper.getMapper();
+	@Inject
+	private EntityManager em;
+	@Inject
+	private Logger log;
+	@Inject
+	private RedeFoodExceptionHandler eh;
+
+	@POST
+	@Path("/facebook")
+	@Produces("application/json;charset=UTF8")
+	public Response facebookLogin(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary,
+			String accessToken) {
+
+		br.com.redefood.model.User user = null;
+		try {
+			String fbToken = prepareAccessToken(accessToken);
+			FacebookClient facebookClient = new DefaultFacebookClient(fbToken);
+			User facebookUser = facebookClient.fetchObject("me", User.class);
+
+			try {
+				user = (br.com.redefood.model.User) em.createNamedQuery(br.com.redefood.model.User.FIND_USER_BY_EMAIL)
+						.setParameter("email", facebookUser.getEmail()).getSingleResult();
+			} catch (Exception e) {
+				if (user == null) {
+					user = createFacebookUser(facebookUser, idSubsidiary);
+				}
+				if (user == null)
+					throw new Exception("insufficient data from facebook");
+			}
+
+			return doLogin(user, locale);
+
+		} catch (Exception e) {
+			if (e.getMessage().contentEquals("insufficient data from facebook"))
+				return eh.loginExceptionHandler(e, locale, "");
+			if (e.getMessage().contains("Facebook"))
+				return eh.loginExceptionHandler(e, locale, "");
+			return eh.userExceptionHandler(e, locale, String.valueOf(user.getEmail()));
 		}
-		if (user == null)
-		    throw new Exception("insufficient data from facebook");
-	    }
-	    
-	    return doLogin(user, locale);
-	    
-	} catch (Exception e) {
-	    if (e.getMessage().contentEquals("insufficient data from facebook"))
-		return eh.loginExceptionHandler(e, locale, "");
-	    if (e.getMessage().contains("Facebook"))
-		return eh.loginExceptionHandler(e, locale, "");
-	    return eh.userExceptionHandler(e, locale, String.valueOf(user.getEmail()));
 	}
-    }
-    
-    private Response doLogin(br.com.redefood.model.User user, String locale) {
-	Timestamp lastSeen = new Timestamp(new Date().getTime());
-	String token = RedeFoodUtils.doHash(Integer.toString(user.hashCode()) + lastSeen);
-	Login loginToken = new Login(token, user.getId(), lastSeen, "login from facebook");
-	user.setLastLogin(lastSeen);
-	user.setNumberOfLogins(user.getNumberOfLogins() + 1);
-	String jsonUser = "";
-	try {
-	    em.persist(loginToken);
-	    em.merge(user);
-	    em.flush();
-	    
-	    if (user.getAddresses() != null && !user.getAddresses().isEmpty()) {
-		for (Address address : user.getAddresses()) {
-		    Hibernate.initialize(address.getCity());
-		    Hibernate.initialize(address.getNeighborhood());
+
+	private Response doLogin(br.com.redefood.model.User user, String locale) {
+		Timestamp lastSeen = new Timestamp(new Date().getTime());
+		String token = RedeFoodUtils.doHash(Integer.toString(user.hashCode()) + lastSeen);
+		Login loginToken = new Login(token, user.getId(), lastSeen, "login from facebook");
+		user.setLastLogin(lastSeen);
+		user.setNumberOfLogins(user.getNumberOfLogins() + 1);
+		String jsonUser = "";
+		try {
+			em.persist(loginToken);
+			em.merge(user);
+			em.flush();
+
+			if (user.getAddresses() != null && !user.getAddresses().isEmpty()) {
+				for (Address address : user.getAddresses()) {
+					Hibernate.initialize(address.getCity());
+					Hibernate.initialize(address.getNeighborhood());
+				}
+			}
+			if (user.getOrders() != null && !user.getOrders().isEmpty()) {
+				Hibernate.initialize(user.getOrders());
+			}
+			if (user.getNotifications() != null) {
+				Hibernate.initialize(user.getNotifications());
+			}
+
+			jsonUser = mapper.writeValueAsString(user);
+
+		} catch (Exception e) {
+			String answer = LocaleResource.getProperty(locale).getProperty("exception.authentication");
+			log.log(Level.SEVERE, answer + ". Failed to persist user token or merge user.");
+			return RedeFoodAnswerGenerator.generateErrorAnswer(401, answer);
 		}
-	    }
-	    if (user.getOrders() != null && !user.getOrders().isEmpty()) {
-		Hibernate.initialize(user.getOrders());
-	    }
-	    if (user.getNotifications() != null) {
-		Hibernate.initialize(user.getNotifications());
-	    }
-	    
-	    jsonUser = mapper.writeValueAsString(user);
-	    
-	} catch (Exception e) {
-	    String answer = LocaleResource.getProperty(locale).getProperty("exception.authentication");
-	    log.log(Level.SEVERE, answer + ". Failed to persist user token or merge user.");
-	    return RedeFoodAnswerGenerator.generateErrorAnswer(401, answer);
+
+		log.log(Level.INFO, "User " + user.getEmail() + " logged in at " + loginToken.getLastSeen() + " with IP "
+				+ loginToken.getIp());
+
+		return Response
+				.status(200)
+				.entity("{\"" + RedeFoodConstants.DEFAULT_TOKEN_IDENTIFICATOR + "\":" + "\"" + token + "\",\"user\":"
+						+ jsonUser + "}").build();
 	}
-	
-	log.log(Level.INFO, "User " + user.getEmail() + " logged in at " + loginToken.getLastSeen() + " with IP "
-		+ loginToken.getIp());
-	
-	return Response
-		.status(200)
-		.entity("{\"" + RedeFoodConstants.DEFAULT_TOKEN_IDENTIFICATOR + "\":" + "\"" + token + "\",\"user\":"
-			+ jsonUser + "}").build();
-    }
-    
-    private String prepareAccessToken(String accessToken) {
-	return accessToken.replace("accessToken", "").replace("\"", "").replace("{", "").replace("}", "")
-		.replace(":", "");
-    }
-    
-    private br.com.redefood.model.User createFacebookUser(User facebookUser, Short idSubsidiary) {
-	br.com.redefood.model.User user = new br.com.redefood.model.User();
-	user.setDateRegistered(new Date());
-	user.setEmail(facebookUser.getEmail());
-	user.setEmailActive(true);
-	user.setFirstName(facebookUser.getFirstName());
-	user.setLastName(facebookUser.getLastName());
-	user.setNumberOfLogins(0);
-	user.setSex(facebookUser.getGender().equalsIgnoreCase("male"));
-	user.setNotifications(new Notifications(true, true, true, user));
-	user.setUserOrigin(em.find(UserOrigin.class, UserOrigin.FACEBOOK));
-	try {
-	    SecureRandom random = new SecureRandom();
-	    user.setPassword(new BigInteger(30, random).toString(32));
-	    
-	    em.persist(user);
-	    em.flush();
-	    
-	    sendNewFacebookUserNotification(user, idSubsidiary);
-	    user.setPassword(RedeFoodUtils.doHash(user.getPassword()));
-	    em.merge(user);
-	    em.flush();
-	    
-	    return user;
-	} catch (Exception e) {
-	    log.log(Level.SEVERE, "Failed to create Facebook user.");
-	    return null;
+
+	private String prepareAccessToken(String accessToken) {
+		return accessToken.replace("accessToken", "").replace("\"", "").replace("{", "").replace("}", "")
+				.replace(":", "");
 	}
-    }
-    
-    @POST
-    @Path("/google")
-    public Response googleLogin() {
-	return null;
-    }
-    
-    private void sendNewFacebookUserNotification(br.com.redefood.model.User user, Short idSubsidiary) throws Exception {
-	Notificator notificator = new NewFacebookUserNotificator();
-	log.log(Level.INFO, "Sending e-mail to user registered through facebook.");
-	notificator.send(preparareEmailMessage(user, idSubsidiary));
-    }
-    
-    private HashMap<String, String> preparareEmailMessage(br.com.redefood.model.User user, Short idSubsidiary) {
-	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
-	if (idSubsidiary != null) {
-	    RedeFoodMailUtil.prepareSubsidiaryLogoAndFooter(emailData, em.find(Subsidiary.class, idSubsidiary));
-	} else {
-	    RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
+
+	private br.com.redefood.model.User createFacebookUser(User facebookUser, Short idSubsidiary) {
+		br.com.redefood.model.User user = new br.com.redefood.model.User();
+		user.setDateRegistered(new Date());
+		user.setEmail(facebookUser.getEmail());
+		user.setEmailActive(true);
+		user.setFirstName(facebookUser.getFirstName());
+		user.setLastName(facebookUser.getLastName());
+		user.setNumberOfLogins(0);
+		user.setSex(facebookUser.getGender().equalsIgnoreCase("male"));
+		user.setNotifications(new Notifications(true, true, true, user));
+		user.setUserOrigin(em.find(UserOrigin.class, UserOrigin.FACEBOOK));
+		try {
+			SecureRandom random = new SecureRandom();
+			user.setPassword(new BigInteger(30, random).toString(32));
+
+			sendNewFacebookUserNotification(user, idSubsidiary);
+			user.setPassword(RedeFoodUtils.doHash(user.getPassword()));
+			em.persist(user);
+			em.flush();
+
+			return user;
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Failed to create Facebook user.");
+			return null;
+		}
 	}
-	emailData.put("addressee", user.getEmail());
-	emailData.put("userName", user.getFirstName().toUpperCase());
-	emailData.put("userPass", user.getPassword());
-	return emailData;
-    }
+
+	@POST
+	@Path("/google")
+	@Produces("application/json;charset=UTF8")
+	public Response googleLogin(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary,
+			String code) {
+
+		br.com.redefood.model.User user = null;
+		try {
+			GoogleAuthHelper helper = new GoogleAuthHelper();
+			GoogleUserDTO googleUser = helper.getUserInfoJson(code, buildRedirectUrl(idSubsidiary));
+
+			try {
+				user = (br.com.redefood.model.User) em.createNamedQuery(br.com.redefood.model.User.FIND_USER_BY_EMAIL)
+						.setParameter("email", googleUser.getEmail()).getSingleResult();
+			} catch (Exception e) {
+				if (user == null) {
+					user = createGoogleUser(googleUser, idSubsidiary);
+				}
+				if (user == null)
+					throw new Exception("insufficient data from google");
+			}
+
+			return doLogin(user, locale);
+
+		} catch (Exception e) {
+			return eh.loginExceptionHandler(e, locale, "");
+		}
+	}
+
+	private br.com.redefood.model.User createGoogleUser(GoogleUserDTO googleUser, Short idSubsidiary) {
+		br.com.redefood.model.User user = new br.com.redefood.model.User();
+		user.setDateRegistered(new Date());
+		user.setEmail(googleUser.getEmail());
+		user.setEmailActive(true);
+		user.setFirstName(googleUser.getGiven_name());
+		user.setLastName(googleUser.getFamily_name());
+		user.setNumberOfLogins(0);
+		user.setSex(googleUser.getGender().equalsIgnoreCase("male"));
+		user.setNotifications(new Notifications(true, true, true, user));
+		user.setUserOrigin(em.find(UserOrigin.class, UserOrigin.GOOGLE));
+
+		try {
+			SecureRandom random = new SecureRandom();
+			user.setPassword(new BigInteger(30, random).toString(32));
+
+			sendNewFacebookUserNotification(user, idSubsidiary);
+			user.setPassword(RedeFoodUtils.doHash(user.getPassword()));
+			em.persist(user);
+			em.flush();
+
+			return user;
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Failed to create Google user.");
+			return null;
+		}
+	}
+
+	@GET
+	@Path("/google")
+	@Produces("application/json;charset=UTF8")
+	public String googleUrl(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary) {
+		GoogleAuthHelper helper = new GoogleAuthHelper();
+		return helper.buildLoginUrl(buildRedirectUrl(idSubsidiary));
+	}
+
+	/**
+	 * Method responsible for finding Subsidiary's subdomain, and build its url
+	 * 
+	 * @param idSubsidiary
+	 *            Subsidiary's id
+	 * @return {@link String} redirect Url used for google login
+	 */
+	private String buildRedirectUrl(Short idSubsidiary) {
+		String redirectUrl = "";
+		try {
+			if (idSubsidiary != null) {
+				redirectUrl = RedeFoodUtils.urlBuilder((String) em
+						.createNamedQuery(Subsidiary.FIND_SUBSIDIARY_SUBDOMAIN)
+						.setParameter("idSubsidiary", idSubsidiary).getSingleResult());
+			} else {
+				redirectUrl = RedeFoodConstants.DEFAULT_REDEFOOD_URL;
+			}
+
+		} catch (NoResultException e) {
+			redirectUrl = RedeFoodConstants.DEFAULT_REDEFOOD_URL;
+		}
+		return redirectUrl;
+	}
+
+	private void sendNewFacebookUserNotification(br.com.redefood.model.User user, Short idSubsidiary) throws Exception {
+		Notificator notificator = new NewFacebookUserNotificator();
+		log.log(Level.INFO, "Sending e-mail to user registered through " + user.getUserOrigin().getName());
+		notificator.send(preparareEmailMessage(user, idSubsidiary));
+	}
+
+	private HashMap<String, String> preparareEmailMessage(br.com.redefood.model.User user, Short idSubsidiary) {
+		EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
+		if (idSubsidiary != null) {
+			RedeFoodMailUtil.prepareSubsidiaryLogoAndFooter(emailData, em.find(Subsidiary.class, idSubsidiary));
+		} else {
+			RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
+		}
+		emailData.put("addressee", user.getEmail());
+		emailData.put("userName", user.getFirstName().toUpperCase());
+		emailData.put("userPass", user.getPassword());
+		emailData.put("origin", user.getUserOrigin().getName());
+		return emailData;
+	}
 }
+
+// INSER PARAMETER TO KNOW WHERE THE REGISTER COMES FROM, GOOGLE OR FACEBOOK.
+// emailData.put("origin",UserOrigin.GOOGLE);

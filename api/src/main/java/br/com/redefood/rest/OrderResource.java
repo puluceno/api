@@ -734,7 +734,8 @@ public class OrderResource extends HibernateMapper {
 		throw new Exception("invalid status");
 	    
 	    // Delivery Online só vai de preparando para saiu para entrega.
-	    if (order.getOrderType().getId().intValue() == 1 && orderStatusUpdated.getOrderStatus().ordinal() != 2)
+	    if (order.getOrderType().getId().intValue() == 1 && orderStatusUpdated.getOrderStatus().ordinal() != 2
+		    && orderStatusUpdated.getOrderStatus().ordinal() != 4)
 		throw new Exception("invalid status");
 	    
 	    break;
@@ -763,7 +764,10 @@ public class OrderResource extends HibernateMapper {
 	    
 	case 5:
 	    // NOT_DELIVERED = 5
-	    if (orderStatusUpdated.getOrderStatus().ordinal() != 5)
+	    if (orderStatusUpdated.getOrderStatus().ordinal() != 5
+	    && orderStatusUpdated.getOrderStatus().ordinal() != 4
+	    && orderStatusUpdated.getOrderStatus().ordinal() != 2
+	    && orderStatusUpdated.getOrderStatus().ordinal() != 3)
 		throw new Exception("invalid status");
 	    break;
 	case 6:
@@ -937,18 +941,19 @@ public class OrderResource extends HibernateMapper {
 	return "deu pau";
     }
     
-    //FIXME
+    // FIXME
     @GET
     @Path("/order/{idOrder:[0-9][0-9]*}/fixtest")
     @Produces("application/json;charset=UTF8")
-    public HashMap<Object,Object> testIngredientListString(@PathParam("idOrder") Integer idOrder) {
-	// lista de categorias -> lista de pratos -> lista de ingredientes adicionados/removidos
-	HashMap<Object,Object> finalList = new HashMap<Object,Object>();
+    public HashMap<Object, Object> testIngredientListString(@PathParam("idOrder") Integer idOrder) {
+	// lista de categorias -> lista de pratos -> lista de ingredientes
+	// adicionados/removidos
+	HashMap<Object, Object> finalList = new HashMap<Object, Object>();
 	
 	Orders order = em.find(Orders.class, idOrder);
 	
 	for (MealOrder mealOrder : order.getMealsOrder()) {
-	    Meal meal = em.find(Meal.class,mealOrder.getIdMeal());
+	    Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
 	    
 	    for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
 		mealOrderIngredient.getIdIngredient();
