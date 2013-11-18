@@ -33,11 +33,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "OpenTime", schema = "RedeFood")
 @XmlRootElement
-@NamedQueries({ @NamedQuery(name = OpenTime.FIND_OPEN_TIME_BY_SUBSIDIARY, query = "SELECT o FROM OpenTime o WHERE subsidiary.idSubsidiary = :idSubsidiary ORDER BY o.daysOfWeek.id ASC, o.localOpenTime ASC") })
+@NamedQueries({
+	@NamedQuery(name = OpenTime.FIND_OPEN_TIME_BY_SUBSIDIARY, query = "SELECT o FROM OpenTime o WHERE subsidiary.idSubsidiary = :idSubsidiary ORDER BY o.daysOfWeek.id ASC, o.localOpenTime ASC"),
+	@NamedQuery(name = OpenTime.FIND_OPEN_TIME_BY_SUBSIDIARY_AND_DAY, query = "SELECT ot FROM OpenTime ot WHERE ot.subsidiary.idSubsidiary = :idSubsidiary AND ot.daysOfWeek.id = :dayOfWeek AND ot.localOpenTime = :localOpenTime") })
 public class OpenTime implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final String FIND_OPEN_TIME_BY_SUBSIDIARY = "FIND_OPEN_TIME_BY_SUBSIDIARY";
+	public static final String FIND_OPEN_TIME_BY_SUBSIDIARY_AND_DAY = "FIND_OPEN_TIME_BY_SUBSIDIARY_AND_DAY";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -157,13 +160,13 @@ public class OpenTime implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((close == null) ? 0 : close.hashCode());
-		result = prime * result + ((daysOfWeek == null) ? 0 : daysOfWeek.hashCode());
-		result = prime * result + ((idOpenTime == null) ? 0 : idOpenTime.hashCode());
-		result = prime * result + ((subsidiary == null) ? 0 : subsidiary.hashCode());
-		result = prime * result + ((open == null) ? 0 : open.hashCode());
-		result = prime * result + ((subsidiaryhasPromotionList == null) ? 0 : subsidiaryhasPromotionList.hashCode());
-		result = prime * result + ((userScheduleList == null) ? 0 : userScheduleList.hashCode());
+		result = prime * result + (close == null ? 0 : close.hashCode());
+		result = prime * result + (daysOfWeek == null ? 0 : daysOfWeek.hashCode());
+		result = prime * result + (idOpenTime == null ? 0 : idOpenTime.hashCode());
+		result = prime * result + (subsidiary == null ? 0 : subsidiary.hashCode());
+		result = prime * result + (open == null ? 0 : open.hashCode());
+		result = prime * result + (subsidiaryhasPromotionList == null ? 0 : subsidiaryhasPromotionList.hashCode());
+		result = prime * result + (userScheduleList == null ? 0 : userScheduleList.hashCode());
 		return result;
 	}
 

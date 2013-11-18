@@ -240,7 +240,7 @@ public class RedeFoodAdminResource extends HibernateMapper {
 	}
 
 	@RedeFoodAdmin
-	@GET
+	@POST
 	@Path("/{idSubsidiary:[0-9][0-9]*}")
 	@Produces("application/json;charset=UTF8")
 	public Response manageSubsidiary(@HeaderParam("locale") String locale, @PathParam("idSubsidiary") Short idSubsidiary) {
