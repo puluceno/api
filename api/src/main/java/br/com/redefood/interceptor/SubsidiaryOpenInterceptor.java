@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -34,8 +33,6 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 	private RedeFoodExceptionHandler eh;
 	@Inject
 	private SubsidiaryResource sr;
-	@Context
-	private HttpServletRequest req;
 	@Context
 	private UriInfo uri;
 
