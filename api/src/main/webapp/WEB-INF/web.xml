@@ -48,7 +48,8 @@
 			br.com.redefood.interceptor.OwnerOrManagerInterceptor,
 			br.com.redefood.interceptor.RedeFoodAdminInterceptor,
 			br.com.redefood.interceptor.SecurableInterceptor,
-			com.thetransactioncompany.cors.CORSFilter
+			com.thetransactioncompany.cors.CORSFilter,
+			br.com.redefood.interceptor.SubsidiaryOpenInterceptor
 		</param-value>
 	</context-param>
 

@@ -347,7 +347,10 @@ public class RatingResource extends HibernateMapper {
 				rating.setReply(ratingReply.get("reply"));
 				rating.setReplyDate(new Date());
 				answer = LocaleResource.getString(locale, "feedback.reply.created", idOrder);
-				sendUserRatingNotification(prepareMessage(rating, originUrl, idSubsidiary));
+				// send message to user only if notification is on
+				if (rating.getUser().getNotifications().getEmailAction()) {
+					sendUserRatingNotification(prepareMessage(rating, originUrl, idSubsidiary));
+				}
 			}
 
 			if (ratingReply.get("rejoinder") != null && !ratingReply.get("rejoinder").isEmpty()) {
@@ -358,7 +361,9 @@ public class RatingResource extends HibernateMapper {
 				rating.setRejoinder(ratingReply.get("rejoinder"));
 				rating.setRejoinderDate(new Date());
 				answer = LocaleResource.getString(locale, "feedback.rejoinder.created", idOrder);
+
 				sendSubsidiaryRatingNotification(prepareMessage(rating, originUrl, idSubsidiary));
+
 			}
 
 			log.log(Level.INFO, answer);
@@ -371,7 +376,7 @@ public class RatingResource extends HibernateMapper {
 
 	private void sendSubsidiaryRatingNotification(HashMap<String, String> emailData) throws Exception {
 		Notificator notificator = new SubsidiaryCommentReceivedNotificator();
-		log.log(Level.INFO, "Sending e-mail about Rating to subsidiary " + emailData.get("subsidiaryName"));
+		log.log(Level.INFO, "Sending e-mail about Rating to subsidiary " + emailData.get("restaurantName"));
 		notificator.send(emailData);
 	}
 
@@ -430,8 +435,8 @@ public class RatingResource extends HibernateMapper {
 					"ratingUrl",
 					msg.replace(
 							"*",
-							rating.getSubsidiary().getRestaurant()
-							.getSubdomain().concat(RedeFoodConstants.DEFAULT_REDEFOOD_URL_SUFFIX)
+							rating.getSubsidiary().getRestaurant().getSubdomain()
+							.concat(RedeFoodConstants.DEFAULT_REDEFOOD_URL_SUFFIX)
 							+ suffix));
 		}
 	}
