@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import javax.inject.Inject;
+import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -42,10 +43,12 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 		final Annotation[][] paramAnnotations = method.getParameterAnnotations();
 		for (Annotation[] paramAnnotation : paramAnnotations) {
 			for (Annotation a : paramAnnotation) {
-				if (a instanceof PathParam && ((PathParam) a).value().equals("idSubsidiary"))
-					return true;
-				if (a instanceof QueryParam && ((QueryParam) a).value().equals("idSubsidiary"))
-					return true;
+				if (a instanceof GET) {
+					if (a instanceof PathParam && ((PathParam) a).value().equals("idSubsidiary"))
+						return true;
+					if (a instanceof QueryParam && ((QueryParam) a).value().equals("idSubsidiary"))
+						return true;
+				}
 			}
 		}
 		return false;
@@ -72,7 +75,7 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 				}
 			}
 		} catch (Exception e) {
-			eh.genericExceptionHandlerResponse(e, "");
+			eh.genericExceptionHandlerResponse(e, "pt_br");
 		}
 	}
 }
