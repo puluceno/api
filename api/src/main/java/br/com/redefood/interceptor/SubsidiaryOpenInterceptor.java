@@ -58,22 +58,23 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 	@Override
 	public void postProcess(ServerResponse response) {
 		try {
-			if (response.getGenericType().toString().equals(String.class.toString())) {
-				String entity = (String) response.getEntity();
-				HashMap<String, Object> value = mapper.readValue(entity, HashMap.class);
+			if (response != null && response.getGenericType() != null)
+				if (response.getGenericType().toString().equals(String.class.toString())) {
+					String entity = (String) response.getEntity();
+					HashMap<String, Object> value = mapper.readValue(entity, HashMap.class);
 
-				final Annotation[][] paramAnnotations = response.getResourceMethod().getParameterAnnotations();
-				for (Annotation[] paramAnnotation : paramAnnotations) {
-					for (Annotation a : paramAnnotation) {
-						if (a instanceof PathParam && ((PathParam) a).value().equals("idSubsidiary")
-								|| a instanceof QueryParam && ((QueryParam) a).value().equals("idSubsidiary")) {
-							Short idSubsidiary = new Short(uri.getPathParameters().getFirst("idSubsidiary"));
-							value.put("subsidiaryOpen", sr.isSubsidiaryOpen("", idSubsidiary));
-							response.setEntity(mapper.writeValueAsString(value));
+					final Annotation[][] paramAnnotations = response.getResourceMethod().getParameterAnnotations();
+					for (Annotation[] paramAnnotation : paramAnnotations) {
+						for (Annotation a : paramAnnotation) {
+							if (a instanceof PathParam && ((PathParam) a).value().equals("idSubsidiary")
+									|| a instanceof QueryParam && ((QueryParam) a).value().equals("idSubsidiary")) {
+								Short idSubsidiary = new Short(uri.getPathParameters().getFirst("idSubsidiary"));
+								value.put("subsidiaryOpen", sr.isSubsidiaryOpen("", idSubsidiary));
+								response.setEntity(mapper.writeValueAsString(value));
+							}
 						}
 					}
 				}
-			}
 		} catch (Exception e) {
 			eh.genericExceptionHandlerResponse(e, "pt_br");
 		}
