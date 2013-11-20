@@ -41,9 +41,9 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 	@Override
 	public boolean accept(Class clazz, Method method) {
 		final Annotation[][] paramAnnotations = method.getParameterAnnotations();
-		for (Annotation[] paramAnnotation : paramAnnotations) {
-			for (Annotation a : paramAnnotation) {
-				if (a instanceof GET) {
+		if (method.getAnnotation(GET.class) != null) {
+			for (Annotation[] paramAnnotation : paramAnnotations) {
+				for (Annotation a : paramAnnotation) {
 					if (a instanceof PathParam && ((PathParam) a).value().equals("idSubsidiary"))
 						return true;
 					if (a instanceof QueryParam && ((QueryParam) a).value().equals("idSubsidiary"))
