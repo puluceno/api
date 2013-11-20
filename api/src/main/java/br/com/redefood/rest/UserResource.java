@@ -445,14 +445,6 @@ public class UserResource extends HibernateMapper {
 	 * @throws Exception
 	 */
 	private User validateCreate(User user) throws Exception {
-
-		// CPF is not verified at first user creation step, because there is no
-		// cpf at this point.
-		// if (!CPFValidator.isCPF(user.getCpf()))
-		// throw new Exception("invalid cpf");
-		// This is to ensure that all cpf go to DB formatted.
-		// user.setCpf(CPFValidator.getValidCpf(user.getCpf()));
-
 		SecureRandom random = new SecureRandom();
 		user.setPassword(new BigInteger(30, random).toString(32));
 		user.setEmailActive(false);
