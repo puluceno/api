@@ -31,7 +31,6 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
-import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -446,7 +445,6 @@ public class Subsidiary implements Serializable {
 		this.metaKeyWords = metaKeyWords;
 	}
 
-	@XmlTransient
 	@JsonIgnore
 	public List<Rating> getRatingList() {
 		return ratingList;
@@ -486,7 +484,6 @@ public class Subsidiary implements Serializable {
 		this.accountList = accountList;
 	}
 
-	@XmlTransient
 	@JsonIgnore
 	public List<Orders> getOrdersList() {
 		return ordersList;
@@ -496,7 +493,6 @@ public class Subsidiary implements Serializable {
 		this.ordersList = ordersList;
 	}
 
-	@XmlTransient
 	public List<Employee> getEmployees() {
 		return employeeList;
 	}

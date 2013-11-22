@@ -25,6 +25,7 @@ import br.com.redefood.exceptions.ExpiredTokenException;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
 import br.com.redefood.model.Employee;
 import br.com.redefood.model.Login;
+import br.com.redefood.model.Profile;
 import br.com.redefood.rest.LoginResource;
 import br.com.redefood.util.RedeFoodAnswerGenerator;
 import br.com.redefood.util.RedeFoodConstants;
@@ -45,7 +46,7 @@ public class RedeFoodAdminInterceptor implements PreProcessInterceptor, Accepted
 
 	@Override
 	public ServerResponse preProcess(HttpRequest request, ResourceMethod method) throws Failure,
-			WebApplicationException {
+	WebApplicationException {
 
 		RedeFoodAdmin owner = method.getMethod().getAnnotation(RedeFoodAdmin.class);
 		String token = servletRequest.getHeader(owner.header());
@@ -53,26 +54,23 @@ public class RedeFoodAdminInterceptor implements PreProcessInterceptor, Accepted
 		try {
 			Login userToken = em.find(Login.class, token);
 
-			if (userToken == null || userToken.getToken() == null || userToken.getToken() == "") {
+			if (userToken == null || userToken.getToken() == null || userToken.getToken() == "")
 				throw new Exception("Invalid user token");
-			}
 
-			if (!userToken.getToken().equals(token)) {
+			if (!userToken.getToken().equals(token))
 				throw new Exception("Invalid user token");
-			}
 
 			verifyExpiration(userToken);
 
 			Short idProfile = (Short) em.createNamedQuery(Employee.FIND_ID_PROFILE_BY_LOGIN)
 					.setParameter("idEmployee", (short) userToken.getIdUser()).getSingleResult();
 
-			if (idProfile != 100)
+			if (!idProfile.equals(Profile.ADMIN_REDEFOOD))
 				throw new Exception("unauthorized");
 
 		} catch (Exception e) {
-			if (e.getMessage().contentEquals("unauthorized")) {
+			if (e.getMessage().contentEquals("unauthorized"))
 				return (ServerResponse) RedeFoodAnswerGenerator.unauthorizedProfile();
-			}
 			return (ServerResponse) eh.tokenExceptionHandler(e, null);
 
 		}

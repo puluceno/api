@@ -635,6 +635,7 @@ public class OrderResource extends HibernateMapper {
 		return order;
 	}
 
+	// TODO: probably this is not going to be used anymore
 	@Securable
 	@PUT
 	@Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}")
@@ -657,31 +658,12 @@ public class OrderResource extends HibernateMapper {
 			if (employee == null)
 				throw new Exception("employee not found");
 
-			Hibernate.initialize(subsidiary.getEmployees());
 			if (!subsidiary.getEmployees().contains(employee))
 				throw new Exception("employee does not work at subsidiary");
 
 			order = em.find(Orders.class, idOrder);
 			if (order == null)
 				throw new Exception("order not found");
-
-			validateOrderStatus(order, orderStatusUpdated);
-
-			if (orderStatusUpdated.getOrderStatus() == OrderStatus.DELIVERING) {
-				order.setOrderSent(Calendar.getInstance().getTime());
-			}
-
-			if (orderStatusUpdated.getOrderStatus() == OrderStatus.CANCELED
-					&& (orderStatusUpdated.getCancelReason() == null || orderStatusUpdated.getCancelReason().isEmpty()
-					|| orderStatusUpdated.getCancelReason().isEmpty() || orderStatusUpdated.getCancelReason()
-					.contentEquals("")))
-				throw new Exception("reason empty");
-			if (orderStatusUpdated.getCancelReason() != null && orderStatusUpdated.getCancelReason().length() < 10)
-				throw new Exception("reason length");
-
-			order.setCancelReason(orderStatusUpdated.getCancelReason());
-			order.setOrderStatus(orderStatusUpdated.getOrderStatus());
-			order.setEmployeeLastStatus(employee.getFirstName());
 
 			if (order.getBoard() != null) {
 				order.getBoard().setBill(
@@ -691,100 +673,11 @@ public class OrderResource extends HibernateMapper {
 			em.merge(order);
 			em.flush();
 
-			// Send e-mails
-			// if (orderStatusUpdated.getOrderStatus() == OrderStatus.DELIVERED
-			// && order.getOrderType().getType() != TypeOrder.LOCAL
-			// && order.getUser().getNotifications().getEmailAction())
-			// sendOrderDeliveredNotification(order);
-
-			if (orderStatusUpdated.getOrderStatus() == OrderStatus.WAITING_PICKUP
-					&& order.getOrderType().getType() != TypeOrder.LOCAL
-					&& order.getUser().getNotifications().getEmailAction()) {
-				sendOrderWaitingNotification(order);
-			}
-
-			if (orderStatusUpdated.getOrderStatus() == OrderStatus.CANCELED
-					&& order.getOrderType().getType() != TypeOrder.LOCAL
-					&& order.getUser().getNotifications().getEmailAction()) {
-				sendOrderCanceledNotification(order);
-			}
-
 			return Response.status(200).build();
 
 		} catch (Exception e) {
 			return eh.orderExceptionHandlerResponse(e, locale, idOrder, orderStatusUpdated.getOrderStatus(),
 					order != null ? order.getOrderStatus() : "order null");
-		}
-	}
-
-	private void validateOrderStatus(Orders order, Orders orderStatusUpdated) throws Exception {
-		switch (order.getOrderStatus().ordinal()) {
-		case 1:
-			// PREPARING = 1
-
-			// Pickup Online só vai para aguardando retirada
-			if (order.getOrderType().getId().intValue() == 6 && orderStatusUpdated.getOrderStatus().ordinal() != 6)
-				throw new Exception("invalid status");
-
-			// Local só vai para Cancelado, Entregue ou Não Entregue
-			if ((order.getOrderType().getId().intValue() == 4 || order.getOrderType().getId().intValue() == 5)
-					&& orderStatusUpdated.getOrderStatus().ordinal() != 3
-					&& orderStatusUpdated.getOrderStatus().ordinal() != 4
-					&& orderStatusUpdated.getOrderStatus().ordinal() != 5)
-				throw new Exception("invalid status");
-
-			// Delivery Online só vai de preparando para saiu para entrega.
-			if (order.getOrderType().getId().intValue() == 1 && orderStatusUpdated.getOrderStatus().ordinal() != 2
-					&& orderStatusUpdated.getOrderStatus().ordinal() != 4)
-				throw new Exception("invalid status");
-
-			break;
-
-		case 2:
-			// DELIVERING = 2
-			if (order.getOrderType().getId().intValue() == 6 && orderStatusUpdated.getOrderStatus().ordinal() != 6)
-				throw new Exception("invalid status");
-
-			if (orderStatusUpdated.getOrderStatus().ordinal() != 3
-					&& orderStatusUpdated.getOrderStatus().ordinal() != 5)
-				throw new Exception("invalid status");
-			break;
-
-		case 3:
-			// DELIVERED = 3
-			if (orderStatusUpdated.getOrderStatus().ordinal() != 3)
-				throw new Exception("invalid status");
-			break;
-
-		case 4:
-			// CANCELED = 4
-			if (orderStatusUpdated.getOrderStatus().ordinal() != 4)
-				throw new Exception("invalid status");
-			break;
-
-		case 5:
-			// NOT_DELIVERED = 5
-			if (orderStatusUpdated.getOrderStatus().ordinal() != 5
-			&& orderStatusUpdated.getOrderStatus().ordinal() != 4
-			&& orderStatusUpdated.getOrderStatus().ordinal() != 2
-			&& orderStatusUpdated.getOrderStatus().ordinal() != 3)
-				throw new Exception("invalid status");
-			break;
-		case 6:
-			// WAITING_PICKUP
-			if (orderStatusUpdated.getOrderStatus().ordinal() != 3
-			&& orderStatusUpdated.getOrderStatus().ordinal() != 5)
-				throw new Exception("invalid status");
-			break;
-
-		default:
-			// ORDER_SENT = 0
-			if (orderStatusUpdated.getOrderStatus().ordinal() == 2
-			|| orderStatusUpdated.getOrderStatus().ordinal() == 3
-			|| orderStatusUpdated.getOrderStatus().ordinal() == 5
-			|| orderStatusUpdated.getOrderStatus().ordinal() == 6)
-				throw new Exception("invalid status");
-			break;
 		}
 	}
 
@@ -1037,15 +930,6 @@ public class OrderResource extends HibernateMapper {
 		return mealsOrder;
 	}
 
-	// FIXME
-	@GET
-	@Path("/order/{idOrder:[0-9][0-9]*}")
-	public void testOrderEmail(@PathParam("idOrder") Integer idOrder) throws Exception {
-		Orders order = em.find(Orders.class, idOrder);
-		sendOrderToUserEmail(order, order.getOrderPaymentMethod().get(0).getPaymentMethod());
-		System.out.println("TEST: email sent successful");
-	}
-
 	public Meal findMeal(Integer idMeal) {
 		return em.find(Meal.class, idMeal);
 	}
@@ -1065,7 +949,7 @@ public class OrderResource extends HibernateMapper {
 			throw new Exception("beverage outOfStock" + "." + beverage.getName());
 	}
 
-	private void sendOrderWaitingNotification(Orders order) throws Exception {
+	protected void sendOrderWaitingNotification(Orders order) throws Exception {
 		Notificator notificator = new OrderWaitingNotificator();
 		log.log(Level.INFO,
 				"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()
@@ -1073,7 +957,7 @@ public class OrderResource extends HibernateMapper {
 		notificator.send(prepareMessage(order, null));
 	}
 
-	private void sendOrderCanceledNotification(Orders order) throws Exception {
+	protected void sendOrderCanceledNotification(Orders order) throws Exception {
 		Notificator notificator = new OrderCanceledNotificator();
 		log.log(Level.INFO,
 				"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()

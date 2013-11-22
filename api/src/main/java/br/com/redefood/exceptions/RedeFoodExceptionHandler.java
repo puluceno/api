@@ -251,6 +251,11 @@ public class RedeFoodExceptionHandler {
 			log.log(Level.INFO, answer);
 			return RedeFoodAnswerGenerator.generateErrorAnswer(403, answer);
 		}
+		if (e.getMessage().contentEquals("status null")) {
+			String answer = LocaleResource.getString(locale, "exception.order.status.null", parameter[1]);
+			log.log(Level.INFO, answer);
+			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
+		}
 		if (e.getMessage().contentEquals("address not found")) {
 			String answer = LocaleResource.getString(locale, "exception.address");
 			log.log(Level.INFO, answer);
