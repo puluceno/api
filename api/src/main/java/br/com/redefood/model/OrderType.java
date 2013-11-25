@@ -191,10 +191,8 @@ public class OrderType implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (description == null ? 0 : description.hashCode());
 		result = prime * result + (idOrderType == null ? 0 : idOrderType.hashCode());
 		result = prime * result + (name == null ? 0 : name.hashCode());
-		result = prime * result + (ordersList == null ? 0 : ordersList.hashCode());
 		return result;
 	}
 
@@ -207,11 +205,6 @@ public class OrderType implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		OrderType other = (OrderType) obj;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
 		if (idOrderType == null) {
 			if (other.idOrderType != null)
 				return false;
@@ -221,11 +214,6 @@ public class OrderType implements Serializable {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
-			return false;
-		if (ordersList == null) {
-			if (other.ordersList != null)
-				return false;
-		} else if (!ordersList.equals(other.ordersList))
 			return false;
 		return true;
 	}

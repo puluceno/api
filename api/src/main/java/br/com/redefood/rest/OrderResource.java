@@ -949,7 +949,7 @@ public class OrderResource extends HibernateMapper {
 			throw new Exception("beverage outOfStock" + "." + beverage.getName());
 	}
 
-	protected void sendOrderWaitingNotification(Orders order) throws Exception {
+	public void sendOrderWaitingNotification(Orders order) throws Exception {
 		Notificator notificator = new OrderWaitingNotificator();
 		log.log(Level.INFO,
 				"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()
@@ -957,7 +957,7 @@ public class OrderResource extends HibernateMapper {
 		notificator.send(prepareMessage(order, null));
 	}
 
-	protected void sendOrderCanceledNotification(Orders order) throws Exception {
+	public void sendOrderCanceledNotification(Orders order) throws Exception {
 		Notificator notificator = new OrderCanceledNotificator();
 		log.log(Level.INFO,
 				"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()

@@ -133,24 +133,32 @@ public class OrderStatusResource extends HibernateMapper {
 
 	private void validateOrderStatus(Orders order, OrderStatus newStatus, String cancelReason) throws Exception {
 
+		if (newStatus.equals(OrderStatus.CANCELED) && (cancelReason == null || cancelReason.isEmpty()))
+			throw new Exception("reason empty");
+		if (newStatus.equals(OrderStatus.CANCELED) && cancelReason != null && cancelReason.length() < 10)
+			throw new Exception("reason length");
+
 		switch (order.getOrderStatus()) {
 
 		case PREPARING:
 			// Pickup Online só vai de Preparando para Aguardando Retirada
-			if (order.getOrderType().equals(OrderType.PICKUP_ONLINE) && !newStatus.equals(OrderStatus.WAITING_PICKUP))
+			if (order.getOrderType().getId().equals(OrderType.PICKUP_ONLINE)
+					&& !newStatus.equals(OrderStatus.WAITING_PICKUP))
 				throw new Exception("invalid status");
 
 			// Local de Preparando só vai para Cancelado, Entregue, Não Entregue
 			// ou permanece em Preparando
-			if ((order.getOrderType().equals(OrderType.LOCAL) || order.getOrderType().equals(OrderType.LOCAL_TO_GO))
-					&& !newStatus.equals(OrderStatus.DELIVERED) && !newStatus.equals(OrderStatus.CANCELED)
+			if ((order.getOrderType().getId().equals(OrderType.LOCAL) || order.getOrderType().getId()
+					.equals(OrderType.LOCAL_TO_GO))
+					&& !newStatus.equals(OrderStatus.DELIVERED)
+					&& !newStatus.equals(OrderStatus.CANCELED)
 					&& !newStatus.equals(OrderStatus.NOT_DELIVERED) && !newStatus.equals(OrderStatus.PREPARING))
 				throw new Exception("invalid status");
 
 			// Delivery Online só vai de Preparando para Saiu para entrega ou
 			// Cancelado
-			if (order.getOrderType().equals(OrderType.DELIVERY_ONLINE) && !newStatus.equals(OrderStatus.DELIVERING)
-					&& !newStatus.equals(OrderStatus.CANCELED))
+			if (order.getOrderType().getId().equals(OrderType.DELIVERY_ONLINE)
+					&& !(newStatus.equals(OrderStatus.DELIVERING) || newStatus.equals(OrderStatus.CANCELED)))
 				throw new Exception("invalid status");
 
 			break;
@@ -191,17 +199,13 @@ public class OrderStatusResource extends HibernateMapper {
 			break;
 
 			// ORDER_SENT = 0
+			// Pedido enviado só vai para preparando ou cancelado.
 		default:
-			if (newStatus.equals(OrderStatus.DELIVERING) || newStatus.equals(OrderStatus.DELIVERED)
-					|| newStatus.equals(OrderStatus.NOT_DELIVERED) || newStatus.equals(OrderStatus.WAITING_PICKUP))
+			if (!newStatus.equals(OrderStatus.PREPARING) && !newStatus.equals(OrderStatus.CANCELED))
 				throw new Exception("invalid status");
 			break;
 		}
 
-		if (newStatus.equals(OrderStatus.CANCELED) && (cancelReason == null || cancelReason.isEmpty()))
-			throw new Exception("reason empty");
-		if (cancelReason != null && cancelReason.length() < 10)
-			throw new Exception("reason length");
 	}
 
 }
