@@ -133,11 +133,6 @@ public class OrderStatusResource extends HibernateMapper {
 
 	private void validateOrderStatus(Orders order, OrderStatus newStatus, String cancelReason) throws Exception {
 
-		if (newStatus.equals(OrderStatus.CANCELED) && (cancelReason == null || cancelReason.isEmpty()))
-			throw new Exception("reason empty");
-		if (newStatus.equals(OrderStatus.CANCELED) && cancelReason != null && cancelReason.length() < 10)
-			throw new Exception("reason length");
-
 		switch (order.getOrderStatus()) {
 
 		case PREPARING:
@@ -205,6 +200,11 @@ public class OrderStatusResource extends HibernateMapper {
 				throw new Exception("invalid status");
 			break;
 		}
+
+		if (newStatus.equals(OrderStatus.CANCELED) && (cancelReason == null || cancelReason.isEmpty()))
+			throw new Exception("reason empty");
+		if (newStatus.equals(OrderStatus.CANCELED) && cancelReason != null && cancelReason.length() < 10)
+			throw new Exception("reason length");
 
 	}
 
