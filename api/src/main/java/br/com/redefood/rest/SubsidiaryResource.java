@@ -69,10 +69,10 @@ public class SubsidiaryResource extends HibernateMapper {
 	private static ObjectMapper mapper = HibernateMapper.getMapper();
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}")
+	@Path("/{idSubsidiary:[0-9][0-9]*}")
 	@Produces("application/json;charset=UTF8")
-	public String lookupSubsidiaryById(@HeaderParam("locale") String locale, @PathParam("id") Short id,
-			@QueryParam("field") String field) {
+	public String lookupSubsidiaryById(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary, @QueryParam("field") String field) {
 
 		List<String> fields = null;
 		if (field != null) {
@@ -82,7 +82,7 @@ public class SubsidiaryResource extends HibernateMapper {
 		Subsidiary subsidiary = null;
 
 		try {
-			subsidiary = em.find(Subsidiary.class, id);
+			subsidiary = em.find(Subsidiary.class, idSubsidiary);
 			if (subsidiary == null)
 				throw new Exception("subsidiary not found");
 			if (fields == null || fields.isEmpty()) {
@@ -169,7 +169,7 @@ public class SubsidiaryResource extends HibernateMapper {
 			return mapper.writeValueAsString(subsidiary);
 
 		} catch (Exception e) {
-			return eh.subsidiaryExceptionHandler(e, locale, id.toString()).getEntity().toString();
+			return eh.subsidiaryExceptionHandler(e, locale, idSubsidiary.toString()).getEntity().toString();
 		}
 	}
 

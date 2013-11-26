@@ -2,6 +2,7 @@ package br.com.redefood.interceptor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.inject.Inject;
@@ -54,14 +55,19 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 		return false;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void postProcess(ServerResponse response) {
 		try {
 			if (response != null && response.getGenericType() != null)
 				if (response.getGenericType().toString().equals(String.class.toString())) {
 					String entity = (String) response.getEntity();
-					HashMap<String, Object> value = mapper.readValue(entity, HashMap.class);
+					Object value = null;
+					try {
+						value = mapper.readValue(entity, ArrayList.class);
+					} catch (Exception e) {
+						value = mapper.readValue(entity, HashMap.class);
+					}
 
 					final Annotation[][] paramAnnotations = response.getResourceMethod().getParameterAnnotations();
 					for (Annotation[] paramAnnotation : paramAnnotations) {
@@ -69,7 +75,13 @@ public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, Accept
 							if (a instanceof PathParam && ((PathParam) a).value().equals("idSubsidiary")
 									|| a instanceof QueryParam && ((QueryParam) a).value().equals("idSubsidiary")) {
 								Short idSubsidiary = new Short(uri.getPathParameters().getFirst("idSubsidiary"));
-								value.put("subsidiaryOpen", sr.isSubsidiaryOpen("", idSubsidiary));
+								if (value instanceof ArrayList) {
+									HashMap<String, Boolean> status = new HashMap<String, Boolean>();
+									status.put("subsidiaryOpen", sr.isSubsidiaryOpen("", idSubsidiary));
+									((ArrayList) value).add(status);
+								} else {
+									((HashMap) value).put("subsidiaryOpen", sr.isSubsidiaryOpen("", idSubsidiary));
+								}
 								response.setEntity(mapper.writeValueAsString(value));
 							}
 						}
