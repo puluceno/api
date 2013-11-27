@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -80,7 +79,7 @@ public class OAuthLogin extends HibernateMapper {
 					throw new Exception("insufficient data from facebook");
 			}
 
-			return doLogin(user, locale);
+			return doLogin(user, locale, UserOrigin.FACEBOOK);
 
 		} catch (Exception e) {
 			if (e.getMessage().contentEquals("insufficient data from facebook"))
@@ -91,10 +90,10 @@ public class OAuthLogin extends HibernateMapper {
 		}
 	}
 
-	private Response doLogin(br.com.redefood.model.User user, String locale) {
+	private Response doLogin(br.com.redefood.model.User user, String locale, Short origin) {
 		Timestamp lastSeen = new Timestamp(new Date().getTime());
 		String token = RedeFoodUtils.doHash(Integer.toString(user.hashCode()) + lastSeen);
-		Login loginToken = new Login(token, user.getId(), lastSeen, "login from facebook");
+		Login loginToken = new Login(token, user.getId(), lastSeen, em.find(UserOrigin.class, origin).getName());
 		user.setLastLogin(lastSeen);
 		user.setNumberOfLogins(user.getNumberOfLogins() + 1);
 		String jsonUser = "";
@@ -165,16 +164,18 @@ public class OAuthLogin extends HibernateMapper {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@Path("/google")
 	@Produces("application/json;charset=UTF8")
 	public Response googleLogin(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary,
-			String code) {
+			@QueryParam("originUrl") String originUrl, String code) {
 
 		br.com.redefood.model.User user = null;
 		try {
+			HashMap<String, String> authCode = mapper.readValue(code, HashMap.class);
 			GoogleAuthHelper helper = new GoogleAuthHelper();
-			GoogleUserDTO googleUser = helper.getUserInfoJson(code, buildRedirectUrl(idSubsidiary));
+			GoogleUserDTO googleUser = helper.getUserInfoJson(authCode.get("code"), originUrl);
 
 			try {
 				user = (br.com.redefood.model.User) em.createNamedQuery(br.com.redefood.model.User.FIND_USER_BY_EMAIL)
@@ -187,7 +188,7 @@ public class OAuthLogin extends HibernateMapper {
 					throw new Exception("insufficient data from google");
 			}
 
-			return doLogin(user, locale);
+			return doLogin(user, locale, UserOrigin.GOOGLE);
 
 		} catch (Exception e) {
 			return eh.loginExceptionHandler(e, locale, "");
@@ -225,39 +226,15 @@ public class OAuthLogin extends HibernateMapper {
 	@GET
 	@Path("/google")
 	@Produces("application/json;charset=UTF8")
-	public String googleUrl(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary) {
+	public String googleUrl(@HeaderParam("locale") String locale, @QueryParam("originUrl") String originUrl) {
 		GoogleAuthHelper helper = new GoogleAuthHelper();
 		try {
 			HashMap<String, String> url = new HashMap<String, String>();
-			url.put("url", helper.buildLoginUrl(buildRedirectUrl(idSubsidiary)));
+			url.put("url", helper.buildLoginUrl(originUrl));
 			return mapper.writeValueAsString(url);
 		} catch (JsonProcessingException e) {
 			return eh.genericExceptionHandlerString(e, locale);
 		}
-	}
-
-	/**
-	 * Method responsible for finding Subsidiary's subdomain, and build its url
-	 * 
-	 * @param idSubsidiary
-	 *            Subsidiary's id
-	 * @return {@link String} redirect Url used for google login
-	 */
-	private String buildRedirectUrl(Short idSubsidiary) {
-		String redirectUrl = "";
-		try {
-			if (idSubsidiary != null) {
-				redirectUrl = RedeFoodUtils.urlBuilder((String) em
-						.createNamedQuery(Subsidiary.FIND_SUBSIDIARY_SUBDOMAIN)
-						.setParameter("idSubsidiary", idSubsidiary).getSingleResult());
-			} else {
-				redirectUrl = RedeFoodConstants.DEFAULT_REDEFOOD_URL;
-			}
-
-		} catch (NoResultException e) {
-			redirectUrl = RedeFoodConstants.DEFAULT_REDEFOOD_URL;
-		}
-		return redirectUrl;
 	}
 
 	private void sendNewFacebookUserNotification(br.com.redefood.model.User user, Short idSubsidiary) throws Exception {
