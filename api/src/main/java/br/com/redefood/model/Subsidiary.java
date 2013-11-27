@@ -27,6 +27,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -195,6 +196,9 @@ public class Subsidiary implements Serializable {
 	@JoinTable(name = "Subsidiary_has_City", joinColumns = { @JoinColumn(name = "idSubsidiary", referencedColumnName = "idSubsidiary", nullable = false) }, inverseJoinColumns = { @JoinColumn(name = "idCity", referencedColumnName = "idCity", nullable = false) })
 	@ManyToMany(fetch = FetchType.LAZY)
 	private List<City> citiesAttended = new ArrayList<City>();
+
+	@Transient
+	private Boolean subsidiaryOpen;
 
 	public Subsidiary() {
 	}
@@ -655,6 +659,14 @@ public class Subsidiary implements Serializable {
 
 	public void setCitiesAttended(List<City> citiesAttended) {
 		this.citiesAttended = citiesAttended;
+	}
+
+	public Boolean getSubsidiaryOpen() {
+		return subsidiaryOpen;
+	}
+
+	public void setSubsidiaryOpen(Boolean subsidiaryOpen) {
+		this.subsidiaryOpen = subsidiaryOpen;
 	}
 
 	@Override

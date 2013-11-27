@@ -11,10 +11,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Provider;
 
-import org.jboss.resteasy.annotations.interception.RedirectPrecedence;
-import org.jboss.resteasy.annotations.interception.ServerInterceptor;
 import org.jboss.resteasy.core.ServerResponse;
 import org.jboss.resteasy.spi.interception.AcceptedByMethod;
 import org.jboss.resteasy.spi.interception.PostProcessInterceptor;
@@ -24,10 +21,11 @@ import br.com.redefood.rest.SubsidiaryResource;
 import br.com.redefood.util.HibernateMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+//Class temporary unused. Anyway, keep this to use as example in the future.
 
-@Provider
-@ServerInterceptor
-@RedirectPrecedence
+//@Provider
+//@ServerInterceptor
+//@RedirectPrecedence
 public class SubsidiaryOpenInterceptor implements PostProcessInterceptor, AcceptedByMethod {
 	private static final ObjectMapper mapper = HibernateMapper.getMapper();
 

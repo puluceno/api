@@ -166,6 +166,8 @@ public class SubsidiaryResource extends HibernateMapper {
 				}
 			}
 
+			subsidiary.setSubsidiaryOpen(isSubsidiaryOpen(locale, idSubsidiary));
+
 			return mapper.writeValueAsString(subsidiary);
 
 		} catch (Exception e) {
@@ -174,12 +176,13 @@ public class SubsidiaryResource extends HibernateMapper {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}/info")
+	@Path("/{idSubsidiary:[0-9][0-9]*}/info")
 	@Produces("application/json;charset=UTF8")
-	public String lookupSubsidiaryInfoById(@HeaderParam("locale") String locale, @PathParam("id") Short id) {
+	public String lookupSubsidiaryInfoById(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary) {
 
 		try {
-			Subsidiary find = em.find(Subsidiary.class, id);
+			Subsidiary find = em.find(Subsidiary.class, idSubsidiary);
 			Hibernate.initialize(find.getAddress());
 			Hibernate.initialize(find.getAddress().getCity());
 			Hibernate.initialize(find.getAddress().getNeighborhood());
@@ -231,10 +234,10 @@ public class SubsidiaryResource extends HibernateMapper {
 
 	@OwnerOrManager
 	@POST
-	@Path("/{id:[0-9][0-9]*}/delivery-area")
+	@Path("/{idSubsidiary:[0-9][0-9]*}/delivery-area")
 	@Consumes("application/json")
-	public Response addDeliveryArea(@HeaderParam("locale") String locale, @PathParam("id") Short idSubsidiary,
-			DeliveryArea deliveryArea) {
+	public Response addDeliveryArea(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary, DeliveryArea deliveryArea) {
 
 		Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
 
@@ -327,10 +330,10 @@ public class SubsidiaryResource extends HibernateMapper {
 	 */
 	@Owner
 	@PUT
-	@Path("/{id:[0-9][0-9]*}")
+	@Path("/{idSubsidiary:[0-9][0-9]*}")
 	@Consumes("application/json")
 	public Response editSubsidiaryAndRestaurant(@HeaderParam("locale") String locale,
-			@PathParam("id") Short idSubsidiary, Subsidiary subsidiary) {
+			@PathParam("idSubsidiary") Short idSubsidiary, Subsidiary subsidiary) {
 
 		try {
 			Subsidiary toMerge = validateEdit(subsidiary, idSubsidiary);
@@ -426,13 +429,14 @@ public class SubsidiaryResource extends HibernateMapper {
 
 	@SuppressWarnings("unchecked")
 	@GET
-	@Path("/{id:[0-9][0-9]*}/open-time")
+	@Path("/{idSubsidiary:[0-9][0-9]*}/open-time")
 	@Produces("application/json;charset=UTF8")
-	public String findSubsidiaryBusinessHour(@HeaderParam("locale") String locale, @PathParam("id") Short id) {
+	public String findSubsidiaryBusinessHour(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary) {
 
 		try {
 			List<OpenTime> resultList = em.createNamedQuery(OpenTime.FIND_OPEN_TIME_BY_SUBSIDIARY)
-					.setParameter("idSubsidiary", id).getResultList();
+					.setParameter("idSubsidiary", idSubsidiary).getResultList();
 
 			for (OpenTime openTime : resultList) {
 				Hibernate.initialize(openTime.getDayOfWeek());
@@ -447,9 +451,9 @@ public class SubsidiaryResource extends HibernateMapper {
 
 	@Owner
 	@POST
-	@Path("/{id:[0-9][0-9]*}/open-time")
+	@Path("/{idSubsidiary:[0-9][0-9]*}/open-time")
 	@Consumes("application/json")
-	public Response addOpenTime(@HeaderParam("locale") String locale, @PathParam("id") Short idSubsidiary,
+	public Response addOpenTime(@HeaderParam("locale") String locale, @PathParam("idSubsidiary") Short idSubsidiary,
 			OpenTime openTime) {
 
 		Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);

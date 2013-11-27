@@ -11,6 +11,8 @@ import javax.ws.rs.core.Response;
 import br.com.redefood.util.LocaleResource;
 import br.com.redefood.util.RedeFoodAnswerGenerator;
 
+import com.google.api.client.auth.oauth2.TokenResponseException;
+
 public class RedeFoodExceptionHandler {
 	@Inject
 	private Logger log;
@@ -284,6 +286,11 @@ public class RedeFoodExceptionHandler {
 	}
 
 	public Response loginExceptionHandler(Exception e, String locale, String... message) {
+		if (e instanceof TokenResponseException) {
+			String answer = LocaleResource.getProperty(locale).getProperty("exception.login.google");
+			log.log(Level.INFO, answer);
+			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
+		}
 		if (e.getMessage().contentEquals("invalid password")) {
 			String answer = LocaleResource.getProperty(locale).getProperty("exception.password");
 			log.log(Level.INFO, answer);

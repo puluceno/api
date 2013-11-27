@@ -40,6 +40,7 @@ import br.com.redefood.util.RedeFoodConstants;
 import br.com.redefood.util.RedeFoodMailUtil;
 import br.com.redefood.util.RedeFoodUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -226,7 +227,13 @@ public class OAuthLogin extends HibernateMapper {
 	@Produces("application/json;charset=UTF8")
 	public String googleUrl(@HeaderParam("locale") String locale, @QueryParam("idSubsidiary") Short idSubsidiary) {
 		GoogleAuthHelper helper = new GoogleAuthHelper();
-		return helper.buildLoginUrl(buildRedirectUrl(idSubsidiary));
+		try {
+			HashMap<String, String> url = new HashMap<String, String>();
+			url.put("url", helper.buildLoginUrl(buildRedirectUrl(idSubsidiary)));
+			return mapper.writeValueAsString(url);
+		} catch (JsonProcessingException e) {
+			return eh.genericExceptionHandlerString(e, locale);
+		}
 	}
 
 	/**
