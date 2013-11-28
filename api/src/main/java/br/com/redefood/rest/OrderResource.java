@@ -611,7 +611,7 @@ public class OrderResource extends HibernateMapper {
 		Integer lastTotalOrderNumber = (Integer) em.createNamedQuery(Orders.FIND_TOTAL_ORDER_NUMBER_BY_SUBSIDIARY)
 				.setParameter("idSubsidiary", idSubsidiary).getSingleResult();
 
-		if (lastTotalOrderNumber.intValue() >= 9999) {
+		if (lastTotalOrderNumber.intValue() >= 999) {
 			order.setTotalOrderNumber(1);
 		} else {
 			order.setTotalOrderNumber(++lastTotalOrderNumber);
