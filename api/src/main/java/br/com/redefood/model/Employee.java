@@ -43,13 +43,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	@NamedQuery(name = Employee.FIND_ALL_LESS_MYSELF, query = "SELECT e FROM Employee e INNER JOIN FETCH e.subsidiaryList s WHERE s.idSubsidiary = :idSubsidiary AND e.idEmployee <> :idEmployee"),
 	@NamedQuery(name = Employee.FIND_BY_FIRSTNAME, query = "SELECT s.employeeList FROM Subsidiary s WHERE s.idSubsidiary = :idSubsidiary"),
 	@NamedQuery(name = Employee.FIND_BY_CPF, query = "SELECT e FROM Employee e WHERE e.cpf = :cpf"),
-	@NamedQuery(name = Employee.FIND_ID_PROFILE_BY_LOGIN, query = "SELECT e.profile.idProfile FROM Employee e WHERE e.idEmployee = :idEmployee") })
+	@NamedQuery(name = Employee.FIND_ID_PROFILE_BY_LOGIN, query = "SELECT e.profile.idProfile FROM Employee e WHERE e.idEmployee = :idEmployee"),
+	@NamedQuery(name = Employee.FIND_BY_SUBSIDIARY_AND_PROFILE, query = "SELECT e FROM Employee e JOIN e.subsidiaryList s WHERE s.idSubsidiary = :idSubsidiary AND e.profile.idProfile = :idProfile ORDER BY e.firstName ASC") })
 public class Employee implements Serializable {
 
 	public static final String FIND_ALL_LESS_MYSELF = "FIND_ALL_LESS_MYSELF";
 	public static final String FIND_BY_FIRSTNAME = "FIND_BY_FIRSTNAME";
 	public static final String FIND_BY_CPF = "FIND_BY_CPF";
 	public static final String FIND_ID_PROFILE_BY_LOGIN = "FIND_ID_PROFILE_BY_LOGIN";
+	public static final String FIND_BY_SUBSIDIARY_AND_PROFILE = "FIND_BY_SUBSIDIARY_AND_PROFILE";
 
 	private static final long serialVersionUID = 1L;
 	@Id

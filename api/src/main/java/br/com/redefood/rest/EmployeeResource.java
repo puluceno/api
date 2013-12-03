@@ -69,7 +69,7 @@ public class EmployeeResource extends HibernateMapper {
 	@OwnerOrManager
 	@GET
 	@Produces("application/json;charset=UTF8")
-	public String listByName(@PathParam("idSubsidiary") Short idSubsidiary, @HeaderParam("token") String token,
+	public String listAllLessMyself(@PathParam("idSubsidiary") Short idSubsidiary, @HeaderParam("token") String token,
 			@HeaderParam("locale") String locale, @DefaultValue("1") @QueryParam("offset") Integer offset,
 			@DefaultValue("100") @QueryParam("limit") Integer limit) {
 
@@ -124,6 +124,32 @@ public class EmployeeResource extends HibernateMapper {
 
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerString(e, locale);
+		}
+	}
+
+	/**
+	 * Method responsible for listing all employees that works on provided
+	 * subsidiary, filtered by profile received by query parameter.
+	 * 
+	 * @param locale
+	 *            locale
+	 * @param idSubsidiary
+	 *            idSubsidiary
+	 * @param idProfile
+	 *            idProfile
+	 * @return List of found employees who meets the given parameters.
+	 */
+	@Securable
+	@GET
+	@Path("/profile")
+	@Produces("application/json;charset=UTF8")
+	public String lookupUserByProfile(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary, @QueryParam("idProfile") Short idProfile) {
+		try {
+			return mapper.writeValueAsString(em.createNamedQuery(Employee.FIND_BY_SUBSIDIARY_AND_PROFILE)
+					.setParameter("idSubsidiary", idSubsidiary).setParameter("idProfile", idProfile).getResultList());
+		} catch (Exception e) {
+			return eh.employeeExceptions(e, locale, "").getEntity().toString();
 		}
 	}
 
