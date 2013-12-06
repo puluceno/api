@@ -38,12 +38,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "Meal", schema = "RedeFood")
 @NamedQueries({
-		@NamedQuery(name = Meal.FIND_MAX_ORDER, query = "SELECT MAX(m.exhibitionOrder) FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary AND m.mealType.id = :idMealType AND m.active=1"),
-		@NamedQuery(name = Meal.FIND_BY_ID_AND_SUBSIDIARY, query = "SELECT m FROM Meal m WHERE m.idMeal = :idMeal AND m.subsidiary.idSubsidiary = :idSubsidiary"),
-		@NamedQuery(name = Meal.FIND_MEAL_BY_SUBSIDIARY, query = "SELECT m FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary AND m.active = 1 ORDER BY m.exhibitionOrder ASC"),
-		@NamedQuery(name = Meal.FIND_BY_SUBSIDIARY_GROUP_BY_MEALTYPE, query = "SELECT DISTINCT mt FROM MealType mt INNER JOIN FETCH mt.meals m WHERE m.subsidiary.idSubsidiary = :idSubsidiary AND m.active = 1 ORDER BY mt.exhibitionOrder ASC, m.exhibitionOrder ASC"),
-		@NamedQuery(name = Meal.FIND_MIN_PRICE_BY_SUBSIDIARY, query = "SELECT MIN(m.price) FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary"),
-		@NamedQuery(name = Meal.FIND_MAX_PRICE_BY_SUBSIDIARY, query = "SELECT MAX(m.price) FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary") })
+	@NamedQuery(name = Meal.FIND_MAX_ORDER, query = "SELECT MAX(m.exhibitionOrder) FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary AND m.mealType.id = :idMealType AND m.active=1"),
+	@NamedQuery(name = Meal.FIND_BY_ID_AND_SUBSIDIARY, query = "SELECT m FROM Meal m WHERE m.idMeal = :idMeal AND m.subsidiary.idSubsidiary = :idSubsidiary"),
+	@NamedQuery(name = Meal.FIND_MEAL_BY_SUBSIDIARY, query = "SELECT m FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary AND m.active = 1 ORDER BY m.exhibitionOrder ASC"),
+	@NamedQuery(name = Meal.FIND_BY_SUBSIDIARY_GROUP_BY_MEALTYPE, query = "SELECT DISTINCT mt FROM MealType mt INNER JOIN FETCH mt.meals m WHERE m.subsidiary.idSubsidiary = :idSubsidiary AND m.active = 1 ORDER BY mt.exhibitionOrder ASC, m.exhibitionOrder ASC"),
+	@NamedQuery(name = Meal.FIND_MIN_PRICE_BY_SUBSIDIARY, query = "SELECT MIN(m.price) FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary"),
+	@NamedQuery(name = Meal.FIND_MAX_PRICE_BY_SUBSIDIARY, query = "SELECT MAX(m.price) FROM Meal m WHERE m.subsidiary.idSubsidiary = :idSubsidiary") })
 public class Meal implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -53,6 +53,9 @@ public class Meal implements Serializable {
 	public static final String FIND_MAX_ORDER = "FIND_MAX_ORDER";
 	public static final String FIND_MAX_PRICE_BY_SUBSIDIARY = "FIND_MAX_PRICE_BY_SUBSIDIARY";
 	public static final String FIND_MIN_PRICE_BY_SUBSIDIARY = "FIND_MIN_PRICE_BY_SUBSIDIARY";
+	public static final String AVG_BY_SUBSIDIARY_AND_DAY_OF_WEEK = "AVG_BY_SUBSIDIARY_AND_DAY_OF_WEEK";
+	public static final String AVG_BY_SUBSIDIARY_AND_HOUR = "AVG_BY_SUBSIDIARY_AND_HOUR";
+
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -343,19 +346,19 @@ public class Meal implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((active == null) ? 0 : active.hashCode());
-		result = prime * result + ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((exhibitionOrder == null) ? 0 : exhibitionOrder.hashCode());
-		result = prime * result + ((image == null) ? 0 : image.hashCode());
-		result = prime * result + ((mealIngredientTypes == null) ? 0 : mealIngredientTypes.hashCode());
-		result = prime * result + ((mealRatings == null) ? 0 : mealRatings.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((note == null) ? 0 : note.hashCode());
-		result = prime * result + ((ordersList == null) ? 0 : ordersList.hashCode());
-		result = prime * result + ((price == null) ? 0 : price.hashCode());
-		result = prime * result + ((sku == null) ? 0 : sku.hashCode());
-		result = prime * result + ((subsidiary == null) ? 0 : subsidiary.hashCode());
-		result = prime * result + ((subsidiaryhasPromotionList == null) ? 0 : subsidiaryhasPromotionList.hashCode());
+		result = prime * result + (active == null ? 0 : active.hashCode());
+		result = prime * result + (description == null ? 0 : description.hashCode());
+		result = prime * result + (exhibitionOrder == null ? 0 : exhibitionOrder.hashCode());
+		result = prime * result + (image == null ? 0 : image.hashCode());
+		result = prime * result + (mealIngredientTypes == null ? 0 : mealIngredientTypes.hashCode());
+		result = prime * result + (mealRatings == null ? 0 : mealRatings.hashCode());
+		result = prime * result + (name == null ? 0 : name.hashCode());
+		result = prime * result + (note == null ? 0 : note.hashCode());
+		result = prime * result + (ordersList == null ? 0 : ordersList.hashCode());
+		result = prime * result + (price == null ? 0 : price.hashCode());
+		result = prime * result + (sku == null ? 0 : sku.hashCode());
+		result = prime * result + (subsidiary == null ? 0 : subsidiary.hashCode());
+		result = prime * result + (subsidiaryhasPromotionList == null ? 0 : subsidiaryhasPromotionList.hashCode());
 		return result;
 	}
 

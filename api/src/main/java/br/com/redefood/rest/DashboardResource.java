@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -21,6 +22,7 @@ import javax.ws.rs.QueryParam;
 
 import br.com.redefood.annotations.Owner;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
+import br.com.redefood.model.Meal;
 import br.com.redefood.model.OrderType;
 import br.com.redefood.model.Orders;
 import br.com.redefood.model.Printer;
@@ -48,7 +50,8 @@ public class DashboardResource extends HibernateMapper {
 			@PathParam("idSubsidiary") Short idSubsidiary, @QueryParam("fromDate") Date from,
 			@QueryParam("toDate") Date to, @QueryParam("fromHour") String hourFrom,
 			@QueryParam("toHour") String hourTo, @QueryParam("print") Boolean print,
-			@QueryParam("printer") Short idPrinter, @QueryParam("clientIP") String clientIP) {
+			@QueryParam("printer") Short idPrinter, @QueryParam("clientIP") String clientIP,
+			@DefaultValue("0") @QueryParam("idMeal") Integer idMeal) {
 
 		if (from == null) {
 			from = new Date();
@@ -76,6 +79,8 @@ public class DashboardResource extends HibernateMapper {
 		}
 
 		try {
+			Map<String, Object> dashboardData = new LinkedHashMap<String, Object>();
+
 			// Orders money
 			List resultMoney = em.createNamedQuery(Subsidiary.FIND_TOTAL_MONEY_BY_DATE)
 					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
@@ -159,7 +164,86 @@ public class DashboardResource extends HibernateMapper {
 					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
 					.getResultList();
 
-			Map<String, Object> dashboardData = new LinkedHashMap<String, Object>();
+			// Average Orders sold by Subsidiary, day of week and Date
+			List<Object[]> avgOrdersByDayList = em
+					.createNativeQuery(getNativeQuery(Orders.AVG_ORDERS_BY_SUBSIDIARY_AND_DAY_OF_WEEK))
+					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
+					.getResultList();
+
+			List<HashMap<String, Object>> avgOrdersByDay = new ArrayList<HashMap<String, Object>>();
+			for (Object[] object : avgOrdersByDayList) {
+				HashMap<String, Object> avgOrderByDay = new HashMap<String, Object>();
+				avgOrderByDay.put("dayOfWeek", object[0]);
+				avgOrderByDay.put("avgOrderQty", object[1]);
+				avgOrdersByDay.add(avgOrderByDay);
+			}
+			dashboardData.put("avgOrdersByDay", avgOrdersByDay);
+
+			// Average Orders sold by Subsidiary, day, hour and Date
+			List<Object[]> avgOrdersByHourList = em
+					.createNativeQuery(getNativeQuery(Orders.AVG_ORDERS_BY_SUBSIDIARY_AND_HOUR))
+					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
+					.getResultList();
+
+			List<HashMap<String, List<HashMap<Object, Object>>>> avgOrdersByDayAndHour = new ArrayList<HashMap<String, List<HashMap<Object, Object>>>>();
+			LinkedHashMap<String, List<HashMap<Object, Object>>> avgOrderByHour = new LinkedHashMap<String, List<HashMap<Object, Object>>>();
+			for (Object[] object : avgOrdersByHourList) {
+				if (!avgOrderByHour.containsKey(object[0])) {
+					List<HashMap<Object, Object>> avgOrdersByDayName = new ArrayList<HashMap<Object, Object>>();
+					HashMap<Object, Object> byHour = new HashMap<Object, Object>();
+					byHour.put(object[1], object[2]);
+					avgOrdersByDayName.add(byHour);
+					avgOrderByHour.put((String) object[0], avgOrdersByDayName);
+				} else {
+					HashMap<Object, Object> byHour = new HashMap<Object, Object>();
+					byHour.put(object[1], object[2]);
+					avgOrderByHour.get(object[0]).add(byHour);
+				}
+			}
+			avgOrdersByDayAndHour.add(avgOrderByHour);
+			dashboardData.put("avgOrdersByHour", avgOrdersByDayAndHour);
+
+			if (!idMeal.equals(0)) {
+				// Average Meals sold by Subsidiary, day of week and Date
+				List<Object[]> avgMealsByDayList = em
+						.createNativeQuery(getNativeQuery(Meal.AVG_BY_SUBSIDIARY_AND_DAY_OF_WEEK))
+						.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
+						.setParameter("idMeal", idMeal).getResultList();
+
+				List<HashMap<String, Object>> avgMealsByDay = new ArrayList<HashMap<String, Object>>();
+				for (Object[] object : avgMealsByDayList) {
+					HashMap<String, Object> avgMealByDay = new HashMap<String, Object>();
+					avgMealByDay.put("dayOfWeek", object[0]);
+					avgMealByDay.put("avgMealQty", object[1]);
+					avgMealsByDay.add(avgMealByDay);
+				}
+				dashboardData.put("avgMealByDay", avgMealsByDay);
+
+				// Average Meals sold by Subsidiary, hour and Date
+				List<Object[]> avgMealsByHourList = em
+						.createNativeQuery(getNativeQuery(Meal.AVG_BY_SUBSIDIARY_AND_HOUR))
+						.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
+						.setParameter("idMeal", idMeal).getResultList();
+
+				List<HashMap<String, List<HashMap<Object, Object>>>> avgMealByDayAndHour = new ArrayList<HashMap<String, List<HashMap<Object, Object>>>>();
+				LinkedHashMap<String, List<HashMap<Object, Object>>> avgMealByHour = new LinkedHashMap<String, List<HashMap<Object, Object>>>();
+				for (Object[] object : avgMealsByHourList) {
+					if (!avgMealByHour.containsKey(object[0])) {
+						List<HashMap<Object, Object>> avgMealsByDayName = new ArrayList<HashMap<Object, Object>>();
+						HashMap<Object, Object> byHour = new HashMap<Object, Object>();
+						byHour.put(object[1], object[2]);
+						avgMealsByDayName.add(byHour);
+						avgMealByHour.put((String) object[0], avgMealsByDayName);
+					} else {
+						HashMap<Object, Object> byHour = new HashMap<Object, Object>();
+						byHour.put(object[1], object[2]);
+						avgMealByHour.get(object[0]).add(byHour);
+					}
+				}
+				avgMealByDayAndHour.add(avgMealByHour);
+				dashboardData.put("avgMealByHour", avgMealByDayAndHour);
+			}
+
 			dashboardData.put("orderQty", qtdy);
 			dashboardData.put("avgOrderPrice",
 					new BigDecimal(avgOrderPrice == null ? 0 : avgOrderPrice).setScale(2, RoundingMode.HALF_DOWN));
@@ -249,12 +333,96 @@ public class DashboardResource extends HibernateMapper {
 			}
 		}
 		for (HashMap<String, String> hashMap : returnList) {
-			Double percent = new BigDecimal((Double.parseDouble(hashMap.get("qty")) / total) * 100).setScale(2,
+			Double percent = new BigDecimal(Double.parseDouble(hashMap.get("qty")) / total * 100).setScale(2,
 					RoundingMode.HALF_DOWN).doubleValue();
 			hashMap.put("percent", percent.toString());
 		}
 
 		return returnList;
+	}
+
+	private String getNativeQuery(String queryName) {
+		StringBuffer query = new StringBuffer();
+		switch (queryName) {
+		case Orders.AVG_ORDERS_BY_SUBSIDIARY_AND_DAY_OF_WEEK:
+			query.append("SELECT day_of_week, ");
+			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("FROM (SELECT Dayname(o.ordermade)   day_of_week, ");
+			query.append("Dayofweek(o.ordermade) day_num, ");
+			query.append("To_days(o.ordermade)   dataa, ");
+			query.append("Count(*) order_count ");
+			query.append("FROM Orders o ");
+			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
+			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
+			query.append("GROUP BY dataa) temp ");
+			query.append("GROUP BY day_of_week ");
+			query.append("ORDER BY day_num");
+			break;
+
+		case Orders.AVG_ORDERS_BY_SUBSIDIARY_AND_HOUR:
+			query.append("SELECT day_of_week, ");
+			query.append("hour_of_day, ");
+			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("FROM (SELECT Dayname(o.ordermade) day_of_week, ");
+			query.append("Hour(o.ordermade) hour_of_day, ");
+			query.append("Dayofweek(o.ordermade) day_num, ");
+			query.append("To_days(o.ordermade) dataa, ");
+			query.append("COUNT(*) order_count ");
+			query.append("FROM Orders o ");
+			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
+			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
+			query.append("GROUP BY hour_of_day, ");
+			query.append("dataa) temp ");
+			query.append("GROUP BY hour_of_day, ");
+			query.append("day_of_week ");
+			query.append("ORDER BY day_num, ");
+			query.append("hour_of_day");
+			break;
+
+		case Meal.AVG_BY_SUBSIDIARY_AND_DAY_OF_WEEK:
+			query.append("SELECT day_of_week, ");
+			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("FROM (SELECT Dayname(o.ordermade) day_of_week, ");
+			query.append("Dayofweek(o.ordermade) day_num, ");
+			query.append("To_days(o.ordermade) dataa, ");
+			query.append("COUNT(ohm.idmeal) order_count ");
+			query.append("FROM Orders o ");
+			query.append("JOIN Order_has_Meal ohm USING (idorders) ");
+			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
+			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
+			query.append("AND ohm.idmeal = :idMeal ");
+			query.append("GROUP BY dataa) temp ");
+			query.append("GROUP BY day_of_week ");
+			query.append("ORDER BY day_num");
+			break;
+
+		case Meal.AVG_BY_SUBSIDIARY_AND_HOUR:
+			query.append("SELECT day_of_week, ");
+			query.append("hour_of_day, ");
+			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("FROM (SELECT Dayname(o.ordermade)   day_of_week, ");
+			query.append("Hour(o.ordermade) hour_of_day, ");
+			query.append("Dayofweek(o.ordermade) day_num, ");
+			query.append("To_days(o.ordermade) dataa, ");
+			query.append("COUNT(ohm.idmeal) order_count ");
+			query.append("FROM Orders o ");
+			query.append("JOIN Order_has_Meal ohm USING (idorders) ");
+			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
+			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
+			query.append("AND ohm.idmeal = :idMeal ");
+			query.append("GROUP  BY hour_of_day, ");
+			query.append("dataa) temp ");
+			query.append("GROUP BY hour_of_day, ");
+			query.append("day_of_week ");
+			query.append("ORDER BY day_num, ");
+			query.append("hour_of_day");
+			break;
+
+		default:
+			break;
+		}
+
+		return query.toString();
 	}
 
 }
