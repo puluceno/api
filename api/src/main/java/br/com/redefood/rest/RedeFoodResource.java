@@ -16,12 +16,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import br.com.redefood.annotations.Securable;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
 import br.com.redefood.mail.notificator.DemoNotificator;
 import br.com.redefood.mail.notificator.Notificator;
 import br.com.redefood.mail.notificator.UserContactNotificator;
 import br.com.redefood.model.Faq;
 import br.com.redefood.model.PossibleCustomers;
+import br.com.redefood.model.Profile;
 import br.com.redefood.model.Tip;
 import br.com.redefood.model.complex.ContactRedeFood;
 import br.com.redefood.model.complex.EmailDataDTO;
@@ -35,97 +37,109 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Stateless
 @Path("")
 public class RedeFoodResource extends HibernateMapper {
-    private static final ObjectMapper mapper = HibernateMapper.getMapper();
-    @Inject
-    private EntityManager em;
-    @Inject
-    private Logger log;
-    @Inject
-    private RedeFoodExceptionHandler eh;
-    
-    @SuppressWarnings("unchecked")
-    @GET
-    @Path("/faq")
-    @Produces("application/json;charset=UTF8")
-    public String listFaq(@HeaderParam("locale") String locale, @QueryParam("section") Section section) {
-	try {
-	    
-	    List<Faq> faqs = em.createNamedQuery(Faq.FIND_FAQ_BY_SECTION).setParameter("section", section)
-		    .getResultList();
-	    
-	    return mapper.writeValueAsString(faqs);
-	    
-	} catch (Exception e) {
-	    return eh.genericExceptionHandlerString(e, locale);
+	private static final ObjectMapper mapper = HibernateMapper.getMapper();
+	@Inject
+	private EntityManager em;
+	@Inject
+	private Logger log;
+	@Inject
+	private RedeFoodExceptionHandler eh;
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/faq")
+	@Produces("application/json;charset=UTF8")
+	public String listFaq(@HeaderParam("locale") String locale, @QueryParam("section") Section section) {
+		try {
+
+			List<Faq> faqs = em.createNamedQuery(Faq.FIND_FAQ_BY_SECTION).setParameter("section", section)
+					.getResultList();
+
+			return mapper.writeValueAsString(faqs);
+
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerString(e, locale);
+		}
 	}
-    }
-    
-    @SuppressWarnings("unchecked")
-    @GET
-    @Path("/tip")
-    @Produces("application/json;charset=UTF8")
-    public String listTip(@HeaderParam("locale") String locale) {
-	try {
-	    List<Tip> tips = em.createNamedQuery(Tip.FIND_ALL_TIPS).getResultList();
-	    
-	    return mapper.writeValueAsString(tips);
-	    
-	} catch (Exception e) {
-	    return eh.genericExceptionHandlerString(e, locale);
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/tip")
+	@Produces("application/json;charset=UTF8")
+	public String listTip(@HeaderParam("locale") String locale) {
+		try {
+			List<Tip> tips = em.createNamedQuery(Tip.FIND_ALL_TIPS).getResultList();
+
+			return mapper.writeValueAsString(tips);
+
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerString(e, locale);
+		}
 	}
-    }
-    
-    @POST
-    @Path("/contact")
-    public Response sendEmailContact(@HeaderParam("locale") String locale, ContactRedeFood contact) {
-	try {
-	    Notificator notificator = new UserContactNotificator();
-	    log.log(Level.FINE, "Sending contact from user " + contact.getEmail());
-	    notificator.send(preparareEmailMessage(null, contact));
-	    return Response.status(200).build();
-	} catch (Exception e) {
-	    return eh.genericExceptionHandlerResponse(e, locale);
+
+	@Securable
+	@GET
+	@Path("/profile")
+	@Produces("application/json;charset=UTF8")
+	public String listProfiles(@HeaderParam("locale") String locale) {
+		try {
+			return mapper.writeValueAsString(em.createNamedQuery(Profile.FIND_ALL_PROFILES).getResultList());
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerString(e, locale);
+		}
 	}
-    }
-    
-    @POST
-    @Path("/demo")
-    public Response registerDemoUser(@HeaderParam("locale") String locale, PossibleCustomers customer) {
-	try {
-	    em.persist(customer);
-	    em.flush();
-	    
-	    sendDemoNotification(customer);
-	    
-	    return Response.status(201).build();
-	} catch (Exception e) {
-	    return eh.genericExceptionHandlerResponse(e, locale);
+
+	@POST
+	@Path("/contact")
+	public Response sendEmailContact(@HeaderParam("locale") String locale, ContactRedeFood contact) {
+		try {
+			Notificator notificator = new UserContactNotificator();
+			log.log(Level.FINE, "Sending contact from user " + contact.getEmail());
+			notificator.send(preparareEmailMessage(null, contact));
+			return Response.status(200).build();
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerResponse(e, locale);
+		}
 	}
-    }
-    
-    private void sendDemoNotification(PossibleCustomers customer) throws Exception {
-	Notificator notificator = new DemoNotificator();
-	log.log(Level.INFO, "Sending Demo e-mail to potential customer.");
-	notificator.send(preparareEmailMessage(customer, null));
-    }
-    
-    private HashMap<String, String> preparareEmailMessage(PossibleCustomers customer, ContactRedeFood contact) {
-	EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
-	RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
-	if (customer != null) {
-	    emailData.put("addressee", customer.getEmail());
-	    emailData.put("demoUrl", RedeFoodConstants.DEFAULT_DEMO_URL);
-	    emailData.put("demoLogin", RedeFoodConstants.DEFAULT_DEMO_LOGIN);
-	    emailData.put("demoPass", RedeFoodConstants.DEFAULT_DEMO_PASS);
-	    emailData.put("userName", customer.getName().toUpperCase());
+
+	@POST
+	@Path("/demo")
+	public Response registerDemoUser(@HeaderParam("locale") String locale, PossibleCustomers customer) {
+		try {
+			em.persist(customer);
+			em.flush();
+
+			sendDemoNotification(customer);
+
+			return Response.status(201).build();
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerResponse(e, locale);
+		}
 	}
-	if (contact != null) {
-	    emailData.put("addressee", RedeFoodConstants.DEFAULT_CONTACT_EMAIL);
-	    emailData.put("message", contact.getMessage());
-	    emailData.put("userEmail", contact.getEmail());
-	    emailData.put("userName", contact.getName());
+
+	private void sendDemoNotification(PossibleCustomers customer) throws Exception {
+		Notificator notificator = new DemoNotificator();
+		log.log(Level.INFO, "Sending Demo e-mail to potential customer.");
+		notificator.send(preparareEmailMessage(customer, null));
 	}
-	
-	return emailData;
-    }
+
+	private HashMap<String, String> preparareEmailMessage(PossibleCustomers customer, ContactRedeFood contact) {
+		EmailDataDTO<String, String> emailData = new EmailDataDTO<String, String>();
+		RedeFoodMailUtil.prepareRedeFoodLogoAndFooter(emailData);
+		if (customer != null) {
+			emailData.put("addressee", customer.getEmail());
+			emailData.put("demoUrl", RedeFoodConstants.DEFAULT_DEMO_URL);
+			emailData.put("demoLogin", RedeFoodConstants.DEFAULT_DEMO_LOGIN);
+			emailData.put("demoPass", RedeFoodConstants.DEFAULT_DEMO_PASS);
+			emailData.put("userName", customer.getName().toUpperCase());
+		}
+		if (contact != null) {
+			emailData.put("addressee", RedeFoodConstants.DEFAULT_CONTACT_EMAIL);
+			emailData.put("message", contact.getMessage());
+			emailData.put("userEmail", contact.getEmail());
+			emailData.put("userName", contact.getName());
+		}
+
+		return emailData;
+	}
 }

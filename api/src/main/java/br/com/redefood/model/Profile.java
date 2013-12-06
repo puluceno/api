@@ -16,6 +16,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlTransient;
@@ -29,8 +31,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @Entity
 @Table(name = "Profile", schema = "RedeFood")
+@NamedQueries({ @NamedQuery(name = Profile.FIND_ALL_PROFILES, query = "SELECT p FROM Profile p") })
 public class Profile implements Serializable {
 	private static final long serialVersionUID = 1L;
+
+	public static final String FIND_ALL_PROFILES = "FIND_ALL_PROFILES";
 
 	/**
 	 * Employee = 1

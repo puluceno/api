@@ -96,9 +96,11 @@ public class OrderStatusResource extends HibernateMapper {
 
 			validateOrderStatus(order, newStatus, cancelReason);
 
-			if (newStatus.equals(OrderStatus.DELIVERING) && idMotoboy != null) {
+			if (newStatus.equals(OrderStatus.DELIVERING)) {
 				order.setOrderSent(new Date());
-				order.setEmployee(em.find(Employee.class, idMotoboy));
+				if (idMotoboy != null) {
+					order.setEmployee(em.find(Employee.class, idMotoboy));
+				}
 			}
 
 			order.setCancelReason(cancelReason);

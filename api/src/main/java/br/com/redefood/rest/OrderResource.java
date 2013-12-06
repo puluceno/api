@@ -737,6 +737,10 @@ public class OrderResource extends HibernateMapper {
 
 			Hibernate.initialize(order.getOrderType());
 
+			if (order.getEmployee() != null) {
+				Hibernate.initialize(order.getEmployee());
+			}
+
 			return mapper.writeValueAsString(order);
 
 		} catch (Exception e) {

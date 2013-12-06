@@ -167,8 +167,8 @@ public class DashboardResource extends HibernateMapper {
 			dashboardData.put("maxOrderPrice", maxO);
 
 			// Adds the money sum
-			for (Object object : resultMoney) {
-				String a[] = mapper.writeValueAsString(object).replace("[", "").replace("]", "").replace("\"", "")
+			for (Object money : resultMoney) {
+				String a[] = mapper.writeValueAsString(money).replace("[", "").replace("]", "").replace("\"", "")
 						.split(",");
 				dashboardData.put("totalOrderValue", a[0]);
 				dashboardData.put("totalDeliveryValue", a[1]);
