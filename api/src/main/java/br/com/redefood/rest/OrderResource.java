@@ -934,6 +934,85 @@ public class OrderResource extends HibernateMapper {
 		return mealsOrder;
 	}
 
+	@GET
+	@Path("/order/{idOrder:[0-9][0-9]*}/fix2")
+	@Produces("application/json;charset=UTF8")
+	public String testOrder(@PathParam("idOrder") Integer idOrder) throws JsonProcessingException {
+		Orders order = em.find(Orders.class, idOrder);
+		List<String> printerData = new ArrayList<String>();
+		for (MealOrder mealOrder : order.getMealsOrder()) {
+			List<String> ingredients = new ArrayList<String>();
+
+			List<String> addedIngredients = new ArrayList<String>();
+			List<String> addedOptionals = new ArrayList<String>();
+			List<String> ingredientsNotMultiple = new ArrayList<String>();
+			for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
+				// lista com todos os ingredientes adicionados
+				if (mealOrderIngredient.getPrice() == 0.0) {
+					addedIngredients.add(mealOrderIngredient.getName());
+				}
+
+				// lista com todos os opcionais adicionados
+				if (mealOrderIngredient.getPrice() != 0.0) {
+					addedOptionals.add(mealOrderIngredient.getName());
+				}
+
+			}
+
+			Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
+
+			for (MealIngredientTypes mit : meal.getMealIngredientTypes()) {
+				for (MealIngredientTypeshasIngredient mithi : mit.getMealIngredientTypeshasIngredient()) {
+
+					// lista com todos os ingredientes inclusos no produto
+					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && mit.getMultiple()) {
+						ingredients.add(mithi.getIngredient().getName());
+					}
+					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && !mit.getMultiple()) {
+						ingredientsNotMultiple.add(mithi.getIngredient().getName());
+					}
+				}
+			}
+
+			// nesta lista vai sobrar os outros ingredientes sem preço que
+			// precisam ser impressos, e q nao sao multiplos
+			ingredientsNotMultiple.removeAll(ingredients);
+
+			ingredients.removeAll(addedIngredients);
+
+			// removes duplicated items
+			HashSet<String> hs = new HashSet<String>();
+			hs.addAll(ingredientsNotMultiple);
+			ingredientsNotMultiple.clear();
+			ingredientsNotMultiple.addAll(hs);
+
+			for (String string : ingredientsNotMultiple) {
+				if (addedIngredients.contains(string)) {
+					addedOptionals.add(string);
+				}
+			}
+
+			// começa a impressão
+			printerData.add(mealOrder.getName());
+			if (mealOrder.getNote() != null && !mealOrder.getNote().isEmpty()) {
+				printerData.add("note: " + mealOrder.getNote());
+			}
+
+			// Imprime cada ingrediente removido
+			for (String name : ingredients) {
+				printerData.add(LocaleResource.getProperty("pt_br").getProperty("order.print.no") + " " + name);
+			}
+
+			// Imprime cada ingrediente adicionado além dos normais
+			for (String name : addedOptionals) {
+				printerData.add(LocaleResource.getProperty("pt_br").getProperty("order.print.plus") + " " + name);
+			}
+
+		}
+		// termina o tratamento dos ingredientes
+		return mapper.writeValueAsString(printerData);
+	}
+
 	public Meal findMeal(Integer idMeal) {
 		return em.find(Meal.class, idMeal);
 	}

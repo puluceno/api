@@ -22,11 +22,13 @@ import javax.ws.rs.QueryParam;
 
 import br.com.redefood.annotations.Owner;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
+import br.com.redefood.model.Employee;
 import br.com.redefood.model.Meal;
 import br.com.redefood.model.OrderType;
 import br.com.redefood.model.Orders;
 import br.com.redefood.model.Printer;
 import br.com.redefood.model.Subsidiary;
+import br.com.redefood.model.complex.MotoboyDeliveriesDTO;
 import br.com.redefood.service.PrintService;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.RedeFoodUtils;
@@ -244,6 +246,13 @@ public class DashboardResource extends HibernateMapper {
 				dashboardData.put("avgMealByHour", avgMealByDayAndHour);
 			}
 
+			// Motoboy related stuff
+			List<MotoboyDeliveriesDTO> motoboyDeliveries = em.createNamedQuery(Employee.FIND_DELIVERIES_BY_MOTOBOY)
+					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
+					.getResultList();
+			dashboardData.put("motoboyDeliveries", motoboyDeliveries);
+
+			// Orders related stuff
 			dashboardData.put("orderQty", qtdy);
 			dashboardData.put("avgOrderPrice",
 					new BigDecimal(avgOrderPrice == null ? 0 : avgOrderPrice).setScale(2, RoundingMode.HALF_DOWN));

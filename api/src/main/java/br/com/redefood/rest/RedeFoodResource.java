@@ -1,5 +1,6 @@
 package br.com.redefood.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -27,6 +28,7 @@ import br.com.redefood.model.Profile;
 import br.com.redefood.model.Tip;
 import br.com.redefood.model.complex.ContactRedeFood;
 import br.com.redefood.model.complex.EmailDataDTO;
+import br.com.redefood.model.enumtype.DiscountType;
 import br.com.redefood.model.enumtype.Section;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.RedeFoodConstants;
@@ -84,6 +86,25 @@ public class RedeFoodResource extends HibernateMapper {
 	public String listProfiles(@HeaderParam("locale") String locale) {
 		try {
 			return mapper.writeValueAsString(em.createNamedQuery(Profile.FIND_ALL_PROFILES).getResultList());
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerString(e, locale);
+		}
+	}
+
+	// @OwnerOrManager comentado pra teste
+	@GET
+	@Path("/discount-types")
+	@Produces("application/json;charset=UTF8")
+	public String listDiscountTypes(@HeaderParam("locale") String locale) {
+		try {
+			List<HashMap<String, String>> discountTypes = new ArrayList<HashMap<String, String>>();
+			for (DiscountType discount : DiscountType.values()) {
+				HashMap<String, String> discountType = new HashMap<String, String>();
+				discountType.put("type", discount.name());
+				discountType.put("name", discount.toString(locale));
+				discountTypes.add(discountType);
+			}
+			return mapper.writeValueAsString(discountTypes);
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerString(e, locale);
 		}

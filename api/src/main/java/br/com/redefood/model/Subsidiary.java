@@ -196,6 +196,8 @@ public class Subsidiary implements Serializable {
 	@JoinTable(name = "Subsidiary_has_City", joinColumns = { @JoinColumn(name = "idSubsidiary", referencedColumnName = "idSubsidiary", nullable = false) }, inverseJoinColumns = { @JoinColumn(name = "idCity", referencedColumnName = "idCity", nullable = false) })
 	@ManyToMany(fetch = FetchType.LAZY)
 	private List<City> citiesAttended = new ArrayList<City>();
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "subsidiary", fetch = FetchType.LAZY)
+	private List<DiscountCoupon> discountCoupons;
 
 	@Transient
 	private Boolean subsidiaryOpen;
@@ -667,6 +669,14 @@ public class Subsidiary implements Serializable {
 
 	public void setSubsidiaryOpen(Boolean subsidiaryOpen) {
 		this.subsidiaryOpen = subsidiaryOpen;
+	}
+
+	public List<DiscountCoupon> getDiscountCoupons() {
+		return discountCoupons;
+	}
+
+	public void setDiscountCoupons(List<DiscountCoupon> discountCoupons) {
+		this.discountCoupons = discountCoupons;
 	}
 
 	@Override

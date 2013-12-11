@@ -458,7 +458,7 @@ public class PrintService {
 
 		// Separate phone and cellphone
 		if (order.getUser().getPhone() != null && order.getUser().getCellphone() != null
-				&& (order.getUser().getPhone().length() > 7 && order.getUser().getCellphone().length() > 7)) {
+				&& order.getUser().getPhone().length() > 7 && order.getUser().getCellphone().length() > 7) {
 			printerData.add(" / ");
 		}
 
@@ -662,7 +662,7 @@ public class PrintService {
 		if (dash.get("totalRenevue").equals("null")) {
 			printerData.add((String) dash.get("totalOrderValue"));
 		} else {
-			printerData.add(((String) dash.get("totalRenevue")));
+			printerData.add((String) dash.get("totalRenevue"));
 		}
 
 		printerData.add(PrinterConstants.LINE_BREAK);
@@ -879,7 +879,7 @@ public class PrintService {
 			printerData.add((String.valueOf(hours.getHours()).contentEquals("1") ? String.valueOf(hours.getHours())
 					+ " hora" : String.valueOf(hours.getHours()) + " horas")
 					+ " e "
-					+ String.valueOf(minutes.getMinutes() > 59 ? minutes.getMinutes() - (hours.getHours() * 60)
+					+ String.valueOf(minutes.getMinutes() > 59 ? minutes.getMinutes() - hours.getHours() * 60
 							: minutes.getMinutes()) + " minutos");
 		}
 		printerData.add(PrinterConstants.LINE_BREAK);
@@ -1010,7 +1010,7 @@ public class PrintService {
 		printerData.add(PrinterConstants.HORIZONTAL_TAB);
 		printerData.add(PrinterConstants.HORIZONTAL_TAB);
 		printerData.add(LocaleResource.getProperty(locale).getProperty("CURRENCY"));
-		printerData.add(formatDouble((b.getBill().setScale(2).doubleValue() * 0.1)));
+		printerData.add(formatDouble(b.getBill().setScale(2).doubleValue() * 0.1));
 		printerData.add(PrinterConstants.LINE_BREAK);
 		printerData.add("--------------------------------------------------");
 
@@ -1031,8 +1031,8 @@ public class PrintService {
 		printerData.add(LocaleResource.getProperty(locale).getProperty("order.print.board.splitby"));
 		printerData.add(PrinterConstants.HORIZONTAL_TAB);
 		printerData.add(LocaleResource.getProperty(locale).getProperty("CURRENCY"));
-		printerData.add(formatDouble((b.getBill().add((b.getBill().multiply(new BigDecimal(0.1))))
-				.divide(new BigDecimal(b.getPeopleNumber()))).doubleValue()));
+		printerData.add(formatDouble(b.getBill().add(b.getBill().multiply(new BigDecimal(0.1)))
+				.divide(new BigDecimal(b.getPeopleNumber())).doubleValue()));
 		printerData.add(PrinterConstants.LINE_BREAK);
 
 		// End of printing
