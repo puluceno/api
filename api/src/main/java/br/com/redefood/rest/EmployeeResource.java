@@ -210,10 +210,6 @@ public class EmployeeResource extends HibernateMapper {
 				return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 			}
 
-			if (employee.getPhoto() != null && !employee.getPhoto().contains("default")) {
-				FileUploadService.deleteOldFile(employee.getPhoto());
-			}
-
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
 
 			String uploadFile = FileUploadService.uploadFile("restaurant/"
@@ -222,6 +218,9 @@ public class EmployeeResource extends HibernateMapper {
 					+ employee.getClass().getSimpleName().toLowerCase(), employee.getId().toString(), photo);
 			if (uploadFile.contains("error"))
 				throw new Exception("file error");
+
+			// clear the old photo, to make the system overwrite it
+			FileUploadService.deleteOldFile(employee.getPhoto());
 
 			employee.setPhoto(uploadFile);
 
