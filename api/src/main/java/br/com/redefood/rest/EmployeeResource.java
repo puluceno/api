@@ -143,8 +143,8 @@ public class EmployeeResource extends HibernateMapper {
 	@GET
 	@Path("/profile")
 	@Produces("application/json;charset=UTF8")
-	public String lookupUserByProfile(@HeaderParam("locale") String locale,
-			@PathParam("idSubsidiary") Short idSubsidiary, @QueryParam("idProfile") Short idProfile) {
+	public String lookupEmployeeByProfile(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary, @QueryParam("profile") Short idProfile) {
 		try {
 			return mapper.writeValueAsString(em.createNamedQuery(Employee.FIND_BY_SUBSIDIARY_AND_PROFILE)
 					.setParameter("idSubsidiary", idSubsidiary).setParameter("idProfile", idProfile).getResultList());
