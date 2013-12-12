@@ -6,7 +6,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +19,6 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -636,50 +634,54 @@ public class OrderResource extends HibernateMapper {
 	}
 
 	// TODO: probably this is not going to be used anymore
-	@Securable
-	@PUT
-	@Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}")
-	@Consumes("application/json")
-	public Response alterOrderStatus(@HeaderParam("token") String token, @HeaderParam("locale") String locale,
-			@PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idOrder") Integer idOrder,
-			Orders orderStatusUpdated) {
-
-		Orders order = null;
-		try {
-			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-			if (subsidiary == null)
-				throw new Exception("subsidiary not found");
-
-			Login login = em.find(Login.class, token);
-			if (login == null)
-				throw new Exception("employee not found");
-
-			Employee employee = em.find(Employee.class, (short) login.getIdUser());
-			if (employee == null)
-				throw new Exception("employee not found");
-
-			if (!subsidiary.getEmployees().contains(employee))
-				throw new Exception("employee does not work at subsidiary");
-
-			order = em.find(Orders.class, idOrder);
-			if (order == null)
-				throw new Exception("order not found");
-
-			if (order.getBoard() != null) {
-				order.getBoard().setBill(
-						order.getBoard().getBill().subtract(new BigDecimal(order.getTotalPrice()).setScale(2)));
-			}
-
-			em.merge(order);
-			em.flush();
-
-			return Response.status(200).build();
-
-		} catch (Exception e) {
-			return eh.orderExceptionHandlerResponse(e, locale, idOrder, orderStatusUpdated.getOrderStatus(),
-					order != null ? order.getOrderStatus() : "order null");
-		}
-	}
+	// @Securable
+	// @PUT
+	// @Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}")
+	// @Consumes("application/json")
+	// public Response alterOrderStatus(@HeaderParam("token") String token,
+	// @HeaderParam("locale") String locale,
+	// @PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idOrder")
+	// Integer idOrder,
+	// Orders orderStatusUpdated) {
+	//
+	// Orders order = null;
+	// try {
+	// Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
+	// if (subsidiary == null)
+	// throw new Exception("subsidiary not found");
+	//
+	// Login login = em.find(Login.class, token);
+	// if (login == null)
+	// throw new Exception("employee not found");
+	//
+	// Employee employee = em.find(Employee.class, (short) login.getIdUser());
+	// if (employee == null)
+	// throw new Exception("employee not found");
+	//
+	// if (!subsidiary.getEmployees().contains(employee))
+	// throw new Exception("employee does not work at subsidiary");
+	//
+	// order = em.find(Orders.class, idOrder);
+	// if (order == null)
+	// throw new Exception("order not found");
+	//
+	// if (order.getBoard() != null) {
+	// order.getBoard().setBill(
+	// order.getBoard().getBill().subtract(new
+	// BigDecimal(order.getTotalPrice()).setScale(2)));
+	// }
+	//
+	// em.merge(order);
+	// em.flush();
+	//
+	// return Response.status(200).build();
+	//
+	// } catch (Exception e) {
+	// return eh.orderExceptionHandlerResponse(e, locale, idOrder,
+	// orderStatusUpdated.getOrderStatus(),
+	// order != null ? order.getOrderStatus() : "order null");
+	// }
+	// }
 
 	@Securable
 	@GET
@@ -750,30 +752,40 @@ public class OrderResource extends HibernateMapper {
 
 	// FIXME
 	@GET
-	@Path("/order/{idOrder:[0-9][0-9]*}/fix")
+	@Path("/order/{idOrder:[0-9][0-9]*}/fixstring")
 	@Produces("application/json;charset=UTF8")
-	public String fixIngredientList(@PathParam("idOrder") Integer idOrder) {
+	public String fixIngredientListString(@PathParam("idOrder") Integer idOrder) throws JsonProcessingException {
 
 		Orders order = em.find(Orders.class, idOrder);
-		HashMap<String, HashMap<String, List<MealOrderIngredient>>> mealsOrder = new HashMap<String, HashMap<String, List<MealOrderIngredient>>>();
+
+		HashMap<String, List<HashMap<String, Object>>> mealsGroupedByType = new HashMap<String, List<HashMap<String, Object>>>();
+		List<Object> mealsOrderList = new ArrayList<Object>();
+
+		HashMap<String, Object> mealsOrder = new HashMap<String, Object>();
 
 		// começa a tratar os ingredientes
 		for (MealOrder mealOrder : order.getMealsOrder()) {
+			List<HashMap<String, String>> removedIngredients = new ArrayList<HashMap<String, String>>();
 
-			List<MealOrderIngredient> removedIngredients = new ArrayList<MealOrderIngredient>();
-			List<MealOrderIngredient> addedIngredients = new ArrayList<MealOrderIngredient>();
-			List<MealOrderIngredient> addedOptionals = new ArrayList<MealOrderIngredient>();
-			List<MealOrderIngredient> ingredientsNotMultiple = new ArrayList<MealOrderIngredient>();
-
+			List<HashMap<String, String>> addedIngredients = new ArrayList<HashMap<String, String>>();
+			List<HashMap<String, String>> addedOptionals = new ArrayList<HashMap<String, String>>();
+			List<HashMap<String, String>> ingredientsNotMultiple = new ArrayList<HashMap<String, String>>();
 			for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
 				// lista com todos os ingredientes adicionados
 				if (mealOrderIngredient.getPrice() == 0.0) {
-					addedIngredients.add(mealOrderIngredient);
+					HashMap<String, String> moi = new HashMap<String, String>();
+					moi.put("name", mealOrderIngredient.getName());
+					moi.put("ingredientType", mealOrderIngredient.getIngredientTypeName());
+					addedIngredients.add(moi);
+
 				}
 
 				// lista com todos os opcionais adicionados
 				if (mealOrderIngredient.getPrice() != 0.0) {
-					addedOptionals.add(mealOrderIngredient);
+					HashMap<String, String> moi = new HashMap<String, String>();
+					moi.put("name", mealOrderIngredient.getName());
+					moi.put("ingredientType", mealOrderIngredient.getIngredientTypeName());
+					addedOptionals.add(moi);
 				}
 
 			}
@@ -781,23 +793,20 @@ public class OrderResource extends HibernateMapper {
 			Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
 
 			for (MealIngredientTypes mit : meal.getMealIngredientTypes()) {
-
 				for (MealIngredientTypeshasIngredient mithi : mit.getMealIngredientTypeshasIngredient()) {
 
 					// lista com todos os ingredientes inclusos no produto
 					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && mit.getMultiple()) {
-						for (MealOrderIngredient moi : mealOrder.getMealOrderIngredients()) {
-							if (moi.getIdIngredient().equals(mithi.getIngredient().getId())) {
-								removedIngredients.add(moi);
-							}
-						}
+						HashMap<String, String> moi = new HashMap<String, String>();
+						moi.put("name", mithi.getIngredient().getName());
+						moi.put("ingredientType", mithi.getIngredient().getIngredientType().getName());
+						removedIngredients.add(moi);
 					}
 					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && !mit.getMultiple()) {
-						for (MealOrderIngredient moi : mealOrder.getMealOrderIngredients()) {
-							if (moi.getIdIngredient().equals(mithi.getIngredient().getId())) {
-								ingredientsNotMultiple.add(moi);
-							}
-						}
+						HashMap<String, String> moi = new HashMap<String, String>();
+						moi.put("name", mithi.getIngredient().getName());
+						moi.put("ingredientType", mithi.getIngredient().getIngredientType().getName());
+						ingredientsNotMultiple.add(moi);
 					}
 				}
 			}
@@ -809,208 +818,71 @@ public class OrderResource extends HibernateMapper {
 			removedIngredients.removeAll(addedIngredients); // removed
 			// ingredients done
 
-			// removes duplicated items
-			HashSet<MealOrderIngredient> hs = new HashSet<MealOrderIngredient>();
-			hs.addAll(ingredientsNotMultiple);
-			ingredientsNotMultiple.clear();
-			ingredientsNotMultiple.addAll(hs);
-
-			for (MealOrderIngredient moi : ingredientsNotMultiple) {
-				if (addedIngredients.contains(moi)) {
+			for (HashMap<String, String> hashMap : ingredientsNotMultiple) {
+				if (addedIngredients.contains(hashMap)) {
+					HashMap<String, String> moi = new HashMap<String, String>();
+					moi.put("name", hashMap.get("name"));
+					moi.put("ingredientType", hashMap.get("ingredientType"));
 					addedOptionals.add(moi);
 				}
 			}
 			// added optionals beyond already included ingredients, done
-			try {
-				HashMap<String, List<MealOrderIngredient>> ingredientsEdit = new HashMap<String, List<MealOrderIngredient>>();
-				ingredientsEdit.put("removed", removedIngredients);
-				ingredientsEdit.put("added", addedOptionals);
-				mealsOrder.put(mealOrder.getName(), ingredientsEdit);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}// closes 1st for
-		try {
-			return mapper.writeValueAsString(mealsOrder);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		return "deu pau";
-	}
 
-	// FIXME
-	@GET
-	@Path("/order/{idOrder:[0-9][0-9]*}/fixtest")
-	@Produces("application/json;charset=UTF8")
-	public HashMap<Object, Object> testIngredientListString(@PathParam("idOrder") Integer idOrder) {
-		// lista de categorias -> lista de pratos -> lista de ingredientes
-		// adicionados/removidos
-		HashMap<Object, Object> finalList = new HashMap<Object, Object>();
+			HashMap<String, Object> ingredientsEdit = new HashMap<String, Object>();
 
-		Orders order = em.find(Orders.class, idOrder);
+			// group elements by categoryName
+			HashMap<String, List<String>> removedIngredientsGroupedByType = groupElementsByKey(removedIngredients,
+					"ingredientType", "name");
 
-		for (MealOrder mealOrder : order.getMealsOrder()) {
-			// Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
+			HashMap<String, List<String>> addedOptionalsGroupedByType = groupElementsByKey(addedOptionals,
+					"ingredientType", "name");
 
-			for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
-				mealOrderIngredient.getIdIngredient();
-			}
+			ingredientsEdit.put("removed", removedIngredientsGroupedByType);
+			ingredientsEdit.put("added", addedOptionalsGroupedByType);
 
-		}
-
-		return finalList;
-	}
-
-	// FIXME
-	@GET
-	@Path("/order/{idOrder:[0-9][0-9]*}/fixstring")
-	@Produces("application/json;charset=UTF8")
-	public HashMap<String, HashMap<String, List<String>>> fixIngredientListString(@PathParam("idOrder") Integer idOrder) {
-
-		Orders order = em.find(Orders.class, idOrder);
-		HashMap<String, HashMap<String, List<String>>> mealsOrder = new HashMap<String, HashMap<String, List<String>>>();
-
-		// começa a tratar os ingredientes
-		for (MealOrder mealOrder : order.getMealsOrder()) {
-			List<String> removedIngredients = new ArrayList<String>();
-
-			List<String> addedIngredients = new ArrayList<String>();
-			List<String> addedOptionals = new ArrayList<String>();
-			List<String> ingredientsNotMultiple = new ArrayList<String>();
-			for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
-				// lista com todos os ingredientes adicionados
-				if (mealOrderIngredient.getPrice() == 0.0) {
-					addedIngredients.add(mealOrderIngredient.getName());
-				}
-
-				// lista com todos os opcionais adicionados
-				if (mealOrderIngredient.getPrice() != 0.0) {
-					addedOptionals.add(mealOrderIngredient.getName());
-				}
-
-			}
-
-			Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
-
-			for (MealIngredientTypes mit : meal.getMealIngredientTypes()) {
-				for (MealIngredientTypeshasIngredient mithi : mit.getMealIngredientTypeshasIngredient()) {
-
-					// lista com todos os ingredientes inclusos no produto
-					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && mit.getMultiple()) {
-						removedIngredients.add(mithi.getIngredient().getName());
-					}
-					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && !mit.getMultiple()) {
-						ingredientsNotMultiple.add(mithi.getIngredient().getName());
-					}
-				}
-			}
-
-			// nesta lista vai sobrar os outros ingredientes sem preço que
-			// precisam ser impressos, e q nao sao multiplos
-			ingredientsNotMultiple.removeAll(removedIngredients);
-
-			removedIngredients.removeAll(addedIngredients); // removed
-			// ingredients done
-
-			// removes duplicated items
-			HashSet<String> hs = new HashSet<String>();
-			hs.addAll(ingredientsNotMultiple);
-			ingredientsNotMultiple.clear();
-			ingredientsNotMultiple.addAll(hs);
-
-			for (String string : ingredientsNotMultiple) {
-				if (addedIngredients.contains(string)) {
-					addedOptionals.add(string);
-				}
-			}
-			// added optionals beyond already included ingredients, done
-
-			HashMap<String, List<String>> ingredientsEdit = new HashMap<String, List<String>>();
-			ingredientsEdit.put("removed", removedIngredients);
-			ingredientsEdit.put("added", addedOptionals);
 			mealsOrder.put(mealOrder.getName(), ingredientsEdit);
+			mealsOrder.put("mealType", mealOrder.getMealTypeName());
+
+			if (mealsOrderList.contains(mealOrder.getMealTypeName())) {
+				HashMap<String, Object> aux = new HashMap<String, Object>();
+				aux.put(mealOrder.getName(), mealsOrder.get(mealOrder.getName()));
+				mealsGroupedByType.get(mealsOrder.get("mealType")).add(aux);
+			} else {
+				HashMap<String, Object> aux = new HashMap<String, Object>();
+				List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+				list.add(aux);
+				aux.put(mealOrder.getName(), mealsOrder.get(mealOrder.getName()));
+				mealsGroupedByType.put((String) mealsOrder.get("mealType"), list);
+				mealsOrderList.add(mealOrder.getMealTypeName());
+			}
 
 		}// closes 1st for
-		return mealsOrder;
+
+		return mapper.writeValueAsString(mealsGroupedByType);
 	}
 
-	@GET
-	@Path("/order/{idOrder:[0-9][0-9]*}/fix2")
-	@Produces("application/json;charset=UTF8")
-	public String testOrder(@PathParam("idOrder") Integer idOrder) throws JsonProcessingException {
-		Orders order = em.find(Orders.class, idOrder);
-		List<String> printerData = new ArrayList<String>();
-		for (MealOrder mealOrder : order.getMealsOrder()) {
-			List<String> ingredients = new ArrayList<String>();
-
-			List<String> addedIngredients = new ArrayList<String>();
-			List<String> addedOptionals = new ArrayList<String>();
-			List<String> ingredientsNotMultiple = new ArrayList<String>();
-			for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
-				// lista com todos os ingredientes adicionados
-				if (mealOrderIngredient.getPrice() == 0.0) {
-					addedIngredients.add(mealOrderIngredient.getName());
-				}
-
-				// lista com todos os opcionais adicionados
-				if (mealOrderIngredient.getPrice() != 0.0) {
-					addedOptionals.add(mealOrderIngredient.getName());
-				}
-
+	/**
+	 * Method responsible for grouping a list of similars objects into a
+	 * HashMap, given a key and the object you want to group.
+	 * 
+	 * @param toGroup
+	 * @param key
+	 * @param variable
+	 * @return
+	 */
+	private HashMap<String, List<String>> groupElementsByKey(List<HashMap<String, String>> toGroup, String key,
+			String variable) {
+		HashMap<String, List<String>> removedIngredientsGroupedByType = new HashMap<String, List<String>>();
+		for (HashMap<String, String> hashMap : toGroup) {
+			if (removedIngredientsGroupedByType.containsKey(hashMap.get(key))) {
+				removedIngredientsGroupedByType.get(hashMap.get(key)).add(hashMap.get(variable));
+			} else {
+				List<String> aux = new ArrayList<String>();
+				aux.add(hashMap.get(variable));
+				removedIngredientsGroupedByType.put(hashMap.get(key), aux);
 			}
-
-			Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
-
-			for (MealIngredientTypes mit : meal.getMealIngredientTypes()) {
-				for (MealIngredientTypeshasIngredient mithi : mit.getMealIngredientTypeshasIngredient()) {
-
-					// lista com todos os ingredientes inclusos no produto
-					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && mit.getMultiple()) {
-						ingredients.add(mithi.getIngredient().getName());
-					}
-					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && !mit.getMultiple()) {
-						ingredientsNotMultiple.add(mithi.getIngredient().getName());
-					}
-				}
-			}
-
-			// nesta lista vai sobrar os outros ingredientes sem preço que
-			// precisam ser impressos, e q nao sao multiplos
-			ingredientsNotMultiple.removeAll(ingredients);
-
-			ingredients.removeAll(addedIngredients);
-
-			// removes duplicated items
-			HashSet<String> hs = new HashSet<String>();
-			hs.addAll(ingredientsNotMultiple);
-			ingredientsNotMultiple.clear();
-			ingredientsNotMultiple.addAll(hs);
-
-			for (String string : ingredientsNotMultiple) {
-				if (addedIngredients.contains(string)) {
-					addedOptionals.add(string);
-				}
-			}
-
-			// começa a impressão
-			printerData.add(mealOrder.getName());
-			if (mealOrder.getNote() != null && !mealOrder.getNote().isEmpty()) {
-				printerData.add("note: " + mealOrder.getNote());
-			}
-
-			// Imprime cada ingrediente removido
-			for (String name : ingredients) {
-				printerData.add(LocaleResource.getProperty("pt_br").getProperty("order.print.no") + " " + name);
-			}
-
-			// Imprime cada ingrediente adicionado além dos normais
-			for (String name : addedOptionals) {
-				printerData.add(LocaleResource.getProperty("pt_br").getProperty("order.print.plus") + " " + name);
-			}
-
 		}
-		// termina o tratamento dos ingredientes
-		return mapper.writeValueAsString(printerData);
+		return removedIngredientsGroupedByType;
 	}
 
 	public Meal findMeal(Integer idMeal) {
