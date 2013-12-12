@@ -203,11 +203,12 @@ public class OrderStatusResource extends HibernateMapper {
 			break;
 		}
 
-		if (newStatus.equals(OrderStatus.CANCELED) && (cancelReason == null || cancelReason.isEmpty()))
+		if ((newStatus.equals(OrderStatus.CANCELED) || newStatus.equals(OrderStatus.NOT_DELIVERED))
+				&& (cancelReason == null || cancelReason.isEmpty()))
 			throw new Exception("reason empty");
-		if (newStatus.equals(OrderStatus.CANCELED) && cancelReason != null && cancelReason.length() < 10)
+		if ((newStatus.equals(OrderStatus.CANCELED) || newStatus.equals(OrderStatus.NOT_DELIVERED))
+				&& cancelReason != null && cancelReason.length() < 10)
 			throw new Exception("reason length");
 
 	}
-
 }
