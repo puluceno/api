@@ -177,6 +177,8 @@ public class DashboardResource extends HibernateMapper {
 				HashMap<String, Object> avgOrderByDay = new HashMap<String, Object>();
 				avgOrderByDay.put("dayOfWeek", object[0]);
 				avgOrderByDay.put("avgOrderQty", object[1]);
+				avgOrderByDay.put("minOrderQty", object[2]);
+				avgOrderByDay.put("maxOrderQty", object[3]);
 				avgOrdersByDay.add(avgOrderByDay);
 			}
 			dashboardData.put("avgOrdersByDay", avgOrdersByDay);
@@ -193,12 +195,24 @@ public class DashboardResource extends HibernateMapper {
 				if (!avgOrderByHour.containsKey(object[0])) {
 					List<HashMap<Object, Object>> avgOrdersByDayName = new ArrayList<HashMap<Object, Object>>();
 					HashMap<Object, Object> byHour = new HashMap<Object, Object>();
-					byHour.put(object[1], object[2]);
+
+					HashMap<Object, Object> byHourAux = new HashMap<Object, Object>();
+					byHourAux.put("avgOrderQty", object[2]);
+					byHourAux.put("minOrderQty", object[3]);
+					byHourAux.put("maxOrderQty", object[4]);
+
+					byHour.put(object[1], byHourAux);
 					avgOrdersByDayName.add(byHour);
 					avgOrderByHour.put((String) object[0], avgOrdersByDayName);
 				} else {
 					HashMap<Object, Object> byHour = new HashMap<Object, Object>();
-					byHour.put(object[1], object[2]);
+
+					HashMap<Object, Object> byHourAux = new HashMap<Object, Object>();
+					byHourAux.put("avgOrderQty", object[2]);
+					byHourAux.put("minOrderQty", object[3]);
+					byHourAux.put("maxOrderQty", object[4]);
+
+					byHour.put(object[1], byHourAux);
 					avgOrderByHour.get(object[0]).add(byHour);
 				}
 			}
@@ -217,6 +231,8 @@ public class DashboardResource extends HibernateMapper {
 					HashMap<String, Object> avgMealByDay = new HashMap<String, Object>();
 					avgMealByDay.put("dayOfWeek", object[0]);
 					avgMealByDay.put("avgMealQty", object[1]);
+					avgMealByDay.put("minMealQty", object[2]);
+					avgMealByDay.put("maxMealQty", object[3]);
 					avgMealsByDay.add(avgMealByDay);
 				}
 				dashboardData.put("avgMealByDay", avgMealsByDay);
@@ -233,12 +249,24 @@ public class DashboardResource extends HibernateMapper {
 					if (!avgMealByHour.containsKey(object[0])) {
 						List<HashMap<Object, Object>> avgMealsByDayName = new ArrayList<HashMap<Object, Object>>();
 						HashMap<Object, Object> byHour = new HashMap<Object, Object>();
-						byHour.put(object[1], object[2]);
+
+						HashMap<Object, Object> byHourAux = new HashMap<Object, Object>();
+						byHourAux.put("avgMealQty", object[2]);
+						byHourAux.put("minMealQty", object[3]);
+						byHourAux.put("maxMealQty", object[4]);
+
+						byHour.put(object[1], byHourAux);
 						avgMealsByDayName.add(byHour);
 						avgMealByHour.put((String) object[0], avgMealsByDayName);
 					} else {
 						HashMap<Object, Object> byHour = new HashMap<Object, Object>();
-						byHour.put(object[1], object[2]);
+
+						HashMap<Object, Object> byHourAux = new HashMap<Object, Object>();
+						byHourAux.put("avgMealQty", object[2]);
+						byHourAux.put("minMealQty", object[3]);
+						byHourAux.put("maxMealQty", object[4]);
+
+						byHour.put(object[1], byHourAux);
 						avgMealByHour.get(object[0]).add(byHour);
 					}
 				}
@@ -355,7 +383,7 @@ public class DashboardResource extends HibernateMapper {
 		switch (queryName) {
 		case Orders.AVG_ORDERS_BY_SUBSIDIARY_AND_DAY_OF_WEEK:
 			query.append("SELECT day_of_week, ");
-			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("AVG(order_count) AS avg_orders_per_day, MIN(order_count) AS min_order_count, MAX(order_count) AS max_order_count ");
 			query.append("FROM (SELECT Dayname(o.ordermade)   day_of_week, ");
 			query.append("Dayofweek(o.ordermade) day_num, ");
 			query.append("To_days(o.ordermade)   dataa, ");
@@ -371,7 +399,7 @@ public class DashboardResource extends HibernateMapper {
 		case Orders.AVG_ORDERS_BY_SUBSIDIARY_AND_HOUR:
 			query.append("SELECT day_of_week, ");
 			query.append("hour_of_day, ");
-			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("AVG(order_count) AS avg_orders_per_hour, MIN(order_count) AS min_order_per_hour, MAX(order_count) AS max_order_per_hour ");
 			query.append("FROM (SELECT Dayname(o.ordermade) day_of_week, ");
 			query.append("Hour(o.ordermade) hour_of_day, ");
 			query.append("Dayofweek(o.ordermade) day_num, ");
@@ -390,11 +418,11 @@ public class DashboardResource extends HibernateMapper {
 
 		case Meal.AVG_BY_SUBSIDIARY_AND_DAY_OF_WEEK:
 			query.append("SELECT day_of_week, ");
-			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("AVG(meal_count) AS avg_meals_per_day, MIN(meal_count) AS min_meal_per_day, MAX(meal_count) AS max_meal_per_day ");
 			query.append("FROM (SELECT Dayname(o.ordermade) day_of_week, ");
 			query.append("Dayofweek(o.ordermade) day_num, ");
 			query.append("To_days(o.ordermade) dataa, ");
-			query.append("COUNT(ohm.idmeal) order_count ");
+			query.append("COUNT(ohm.idmeal) meal_count ");
 			query.append("FROM Orders o ");
 			query.append("JOIN Order_has_Meal ohm USING (idorders) ");
 			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
@@ -408,12 +436,12 @@ public class DashboardResource extends HibernateMapper {
 		case Meal.AVG_BY_SUBSIDIARY_AND_HOUR:
 			query.append("SELECT day_of_week, ");
 			query.append("hour_of_day, ");
-			query.append("AVG(order_count) AS avg_orders_per_day ");
+			query.append("AVG(meal_count) AS avg_meals_per_hour, MIN(meal_count) AS min_meal_per_hour, MAX(meal_count) AS max_meal_per_hour ");
 			query.append("FROM (SELECT Dayname(o.ordermade)   day_of_week, ");
 			query.append("Hour(o.ordermade) hour_of_day, ");
 			query.append("Dayofweek(o.ordermade) day_num, ");
 			query.append("To_days(o.ordermade) dataa, ");
-			query.append("COUNT(ohm.idmeal) order_count ");
+			query.append("COUNT(ohm.idmeal) meal_count ");
 			query.append("FROM Orders o ");
 			query.append("JOIN Order_has_Meal ohm USING (idorders) ");
 			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
