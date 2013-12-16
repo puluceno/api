@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -633,56 +634,6 @@ public class OrderResource extends HibernateMapper {
 		return order;
 	}
 
-	// TODO: probably this is not going to be used anymore
-	// @Securable
-	// @PUT
-	// @Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}")
-	// @Consumes("application/json")
-	// public Response alterOrderStatus(@HeaderParam("token") String token,
-	// @HeaderParam("locale") String locale,
-	// @PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idOrder")
-	// Integer idOrder,
-	// Orders orderStatusUpdated) {
-	//
-	// Orders order = null;
-	// try {
-	// Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-	// if (subsidiary == null)
-	// throw new Exception("subsidiary not found");
-	//
-	// Login login = em.find(Login.class, token);
-	// if (login == null)
-	// throw new Exception("employee not found");
-	//
-	// Employee employee = em.find(Employee.class, (short) login.getIdUser());
-	// if (employee == null)
-	// throw new Exception("employee not found");
-	//
-	// if (!subsidiary.getEmployees().contains(employee))
-	// throw new Exception("employee does not work at subsidiary");
-	//
-	// order = em.find(Orders.class, idOrder);
-	// if (order == null)
-	// throw new Exception("order not found");
-	//
-	// if (order.getBoard() != null) {
-	// order.getBoard().setBill(
-	// order.getBoard().getBill().subtract(new
-	// BigDecimal(order.getTotalPrice()).setScale(2)));
-	// }
-	//
-	// em.merge(order);
-	// em.flush();
-	//
-	// return Response.status(200).build();
-	//
-	// } catch (Exception e) {
-	// return eh.orderExceptionHandlerResponse(e, locale, idOrder,
-	// orderStatusUpdated.getOrderStatus(),
-	// order != null ? order.getOrderStatus() : "order null");
-	// }
-	// }
-
 	@Securable
 	@GET
 	@Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}")
@@ -750,13 +701,91 @@ public class OrderResource extends HibernateMapper {
 		}
 	}
 
-	// FIXME
+	// FIXME just a test
+	@SuppressWarnings("unchecked")
 	@GET
-	@Path("/order/{idOrder:[0-9][0-9]*}/fixstring")
+	@Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}/new2")
 	@Produces("application/json;charset=UTF8")
-	public String fixIngredientListString(@PathParam("idOrder") Integer idOrder) throws JsonProcessingException {
+	public String findOrderDetailsNew2(@HeaderParam("locale") String locale, @HeaderParam("token") String token,
+			@PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idOrder") Integer idOrder) {
+		try {
+			Orders order = em.find(Orders.class, idOrder);
 
-		Orders order = em.find(Orders.class, idOrder);
+			LinkedHashMap<String, Object> readValue = mapper.readValue(
+					findOrderDetails(locale, token, idSubsidiary, idOrder), LinkedHashMap.class);
+
+			readValue.put("fixedMeals", fixIngredientListString(order.getMealsOrder()));
+
+			return mapper.writeValueAsString(readValue);
+
+		} catch (Exception e) {
+			return eh.orderExceptionHandlerString(e, locale, idOrder.toString());
+		}
+	}
+
+	// FIXME
+	// @Securable
+	@GET
+	@Path("/subsidiary/{idSubsidiary:[0-9][0-9]*}/order/{idOrder:[0-9][0-9]*}/new")
+	@Produces("application/json;charset=UTF8")
+	public String findOrderDetailsNew(@HeaderParam("locale") String locale, @HeaderParam("token") String token,
+			@PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idOrder") Integer idOrder) {
+		try {
+			// TODO: só usuário dono do pedido pode visualizar, e também apenas
+			// funcionários que trabalham na loja supra-citada - criar
+			// annotation employee, que verifica além do perfil, se ele trabalha
+			// na loja do PathParam
+
+			Orders order = em.find(Orders.class, idOrder);
+
+			if (order == null)
+				throw new Exception("order not found");
+
+			Login login = em.find(Login.class, token);
+			if (login.getIdUser() > 100000) {
+				User user = em.find(User.class, login.getIdUser());
+				if (!user.getOrders().contains(order))
+					throw new Exception("denied");
+			} else {
+				Employee employee = em.find(Employee.class, Short.valueOf(String.valueOf(login.getIdUser())));
+				int count = 0;
+				for (Subsidiary subsidiary : employee.getSubsidiaryList()) {
+					if (subsidiary.getId().intValue() != idSubsidiary.intValue()) {
+						count++;
+					}
+				}
+				if (count == employee.getSubsidiaryList().size())
+					throw new Exception("denied");
+			}
+
+			LinkedHashMap<String, Object> orderMap = new LinkedHashMap<String, Object>();
+			orderMap.put("totalPrice", order.getTotalPrice());
+			orderMap.put("orderStatus", order.getOrderStatus());
+			orderMap.put("note", order.getNote());
+			orderMap.put("orderMade", order.getOrderMade());
+			orderMap.put("orderSent", order.getOrderSent());
+			orderMap.put("discountCoupon", order.getDiscountCoupon());
+
+			HashMap<String, Object> orderType = new HashMap<String, Object>();
+			orderType.put("id", order.getOrderType().getId());
+			orderType.put("name", order.getOrderType().getName());
+			orderType.put("type", order.getOrderType().getType());
+
+			orderMap.put("orderType", orderType);
+			orderMap.put("beveragesOrder", order.getBeveragesOrder());
+			orderMap.put("mealsOrder", fixIngredientListString(order.getMealsOrder()));
+
+			return mapper.writeValueAsString(orderMap);
+
+		} catch (Exception e) {
+			return eh.orderExceptionHandlerString(e, locale, idOrder.toString());
+		}
+	}
+
+	// FIXME: mudar para método privado, que recebe a lista de mealsOrder, e
+	// retorna o objeto para posteriormente ser processsado
+	private HashMap<String, List<HashMap<String, Object>>> fixIngredientListString(List<MealOrder> meals)
+			throws JsonProcessingException {
 
 		HashMap<String, List<HashMap<String, Object>>> mealsGroupedByType = new HashMap<String, List<HashMap<String, Object>>>();
 		List<Object> mealsOrderList = new ArrayList<Object>();
@@ -764,7 +793,116 @@ public class OrderResource extends HibernateMapper {
 		HashMap<String, Object> mealsOrder = new HashMap<String, Object>();
 
 		// começa a tratar os ingredientes
-		for (MealOrder mealOrder : order.getMealsOrder()) {
+		for (MealOrder mealOrder : meals) {
+			List<HashMap<String, String>> removedIngredients = new ArrayList<HashMap<String, String>>();
+
+			List<HashMap<String, String>> addedIngredients = new ArrayList<HashMap<String, String>>();
+			List<HashMap<String, String>> addedOptionals = new ArrayList<HashMap<String, String>>();
+			List<HashMap<String, String>> ingredientsNotMultiple = new ArrayList<HashMap<String, String>>();
+			for (MealOrderIngredient mealOrderIngredient : mealOrder.getMealOrderIngredients()) {
+				// lista com todos os ingredientes adicionados
+				if (mealOrderIngredient.getPrice() == 0.0) {
+					HashMap<String, String> moi = new HashMap<String, String>();
+					moi.put("name", mealOrderIngredient.getName());
+					moi.put("ingredientType", mealOrderIngredient.getIngredientTypeName());
+					addedIngredients.add(moi);
+
+				}
+
+				// lista com todos os opcionais adicionados
+				if (mealOrderIngredient.getPrice() != 0.0) {
+					HashMap<String, String> moi = new HashMap<String, String>();
+					moi.put("name", mealOrderIngredient.getName());
+					moi.put("ingredientType", mealOrderIngredient.getIngredientTypeName());
+					addedOptionals.add(moi);
+				}
+
+			}
+
+			Meal meal = em.find(Meal.class, mealOrder.getIdMeal());
+
+			for (MealIngredientTypes mit : meal.getMealIngredientTypes()) {
+				for (MealIngredientTypeshasIngredient mithi : mit.getMealIngredientTypeshasIngredient()) {
+
+					// lista com todos os ingredientes inclusos no produto
+					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && mit.getMultiple()) {
+						HashMap<String, String> moi = new HashMap<String, String>();
+						moi.put("name", mithi.getIngredient().getName());
+						moi.put("ingredientType", mithi.getIngredient().getIngredientType().getName());
+						removedIngredients.add(moi);
+					}
+					if ((mithi.getPrice() == null || mithi.getPrice() == 0.0) && !mit.getMultiple()) {
+						HashMap<String, String> moi = new HashMap<String, String>();
+						moi.put("name", mithi.getIngredient().getName());
+						moi.put("ingredientType", mithi.getIngredient().getIngredientType().getName());
+						ingredientsNotMultiple.add(moi);
+					}
+				}
+			}
+
+			// nesta lista vai sobrar os outros ingredientes sem preço que
+			// precisam ser impressos, e q nao sao multiplos
+			ingredientsNotMultiple.removeAll(removedIngredients);
+
+			removedIngredients.removeAll(addedIngredients); // removed
+			// ingredients done
+
+			for (HashMap<String, String> hashMap : ingredientsNotMultiple) {
+				if (addedIngredients.contains(hashMap)) {
+					HashMap<String, String> moi = new HashMap<String, String>();
+					moi.put("name", hashMap.get("name"));
+					moi.put("ingredientType", hashMap.get("ingredientType"));
+					addedOptionals.add(moi);
+				}
+			}
+			// added optionals beyond already included ingredients, done
+
+			HashMap<String, Object> ingredientsEdit = new HashMap<String, Object>();
+
+			// group elements by categoryName
+			HashMap<String, List<String>> removedIngredientsGroupedByType = groupElementsByKey(removedIngredients,
+					"ingredientType", "name");
+
+			HashMap<String, List<String>> addedOptionalsGroupedByType = groupElementsByKey(addedOptionals,
+					"ingredientType", "name");
+
+			ingredientsEdit.put("removed", removedIngredientsGroupedByType);
+			ingredientsEdit.put("added", addedOptionalsGroupedByType);
+
+			mealsOrder.put(mealOrder.getName(), ingredientsEdit);
+			mealsOrder.put("mealType", mealOrder.getMealTypeName());
+
+			if (mealsOrderList.contains(mealOrder.getMealTypeName())) {
+				HashMap<String, Object> aux = new HashMap<String, Object>();
+				aux.put(mealOrder.getName(), mealsOrder.get(mealOrder.getName()));
+				mealsGroupedByType.get(mealsOrder.get("mealType")).add(aux);
+			} else {
+				HashMap<String, Object> aux = new HashMap<String, Object>();
+				List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+				list.add(aux);
+				aux.put(mealOrder.getName(), mealsOrder.get(mealOrder.getName()));
+				mealsGroupedByType.put((String) mealsOrder.get("mealType"), list);
+				mealsOrderList.add(mealOrder.getMealTypeName());
+			}
+
+		}// closes 1st for
+
+		return mealsGroupedByType;
+	}
+
+	// FIXME TESTE
+	@GET
+	@Path("/order/{idOrder:[0-9][0-9]*}/fix")
+	@Produces("application/json;charset=UTF8")
+	public String fixIngredientList(@PathParam("idOrder") Integer idOrder) throws JsonProcessingException {
+
+		HashMap<String, List<HashMap<String, Object>>> mealsGroupedByType = new HashMap<String, List<HashMap<String, Object>>>();
+		List<Object> mealsOrderList = new ArrayList<Object>();
+
+		HashMap<String, Object> mealsOrder = new HashMap<String, Object>();
+
+		// começa a tratar os ingredientes
+		for (MealOrder mealOrder : em.find(Orders.class, idOrder).getMealsOrder()) {
 			List<HashMap<String, String>> removedIngredients = new ArrayList<HashMap<String, String>>();
 
 			List<HashMap<String, String>> addedIngredients = new ArrayList<HashMap<String, String>>();

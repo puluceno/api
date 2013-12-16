@@ -378,6 +378,11 @@ public class DashboardResource extends HibernateMapper {
 		return returnList;
 	}
 
+	/**
+	 * Returns the native query given its name
+	 * @param queryName queryName
+	 * @return The native query
+	 */
 	private String getNativeQuery(String queryName) {
 		StringBuffer query = new StringBuffer();
 		switch (queryName) {
