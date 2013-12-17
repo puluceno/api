@@ -99,10 +99,13 @@ public class DashboardResource extends HibernateMapper {
 					.getSingleResult();
 
 			// Avg Orders qty by day
-			BigDecimal avgOrderQtyByDay = new BigDecimal((String) em
-					.createNamedQuery(Orders.AVG_ORDERS_PER_DAY_BY_SUBSIDIARY_AND_DATE).setParameter("from", from)
-					.setParameter("to", to).setParameter("idSubsidiary", idSubsidiary).getSingleResult()).setScale(2,
-							RoundingMode.HALF_UP);
+			Object objAvgOrdersQty = em.createNamedQuery(Orders.AVG_ORDERS_PER_DAY_BY_SUBSIDIARY_AND_DATE)
+					.setParameter("from", from).setParameter("to", to).setParameter("idSubsidiary", idSubsidiary)
+					.getSingleResult();
+			BigDecimal avgOrderQtyByDay = null;
+			if (objAvgOrdersQty != null) {
+				avgOrderQtyByDay = new BigDecimal((String) objAvgOrdersQty).setScale(2, RoundingMode.HALF_UP);
+			}
 
 			// Orders price
 			Double avgOrderPrice = (Double) em.createNamedQuery(Orders.FIND_AVG_ORDER_PRICE)
