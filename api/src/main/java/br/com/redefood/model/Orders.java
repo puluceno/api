@@ -99,7 +99,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 																	+ " JOIN o.meals meal"
 																	+ " JOIN meal.mealType mt"
 																	+ " WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'"
-																	+ " GROUP BY mt.name ORDER BY qty DESC, mt.name ASC") })
+																	+ " GROUP BY mt.name ORDER BY qty DESC, mt.name ASC"),
+																	@NamedQuery(name = Orders.AVG_ORDERS_PER_DAY_BY_SUBSIDIARY_AND_DATE, query = "SELECT CAST((COUNT(o)/(TO_DAYS(:to)-TO_DAYS(:from))) AS string) FROM Orders o WHERE o.orderMade BETWEEN :from AND :to AND o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus <> 'CANCELED' AND o.orderType <> 8") })
 public class Orders implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -132,6 +133,7 @@ public class Orders implements Serializable {
 	public static final String MEAL_TYPE_MOST_SOLD_BY_SUBSIDIARY_AND_PERIOD = "MEAL_TYPE_MOST_SOLD_BY_SUBSIDIARY_AND_PERIOD";
 	public static final String AVG_ORDERS_BY_SUBSIDIARY_AND_DAY_OF_WEEK = "AVG_ORDERS_BY_SUBSIDIARY_AND_DAY_OF_WEEK";
 	public static final String AVG_ORDERS_BY_SUBSIDIARY_AND_HOUR = "AVG_ORDERS_BY_SUBSIDIARY_AND_HOUR";
+	public static final String AVG_ORDERS_PER_DAY_BY_SUBSIDIARY_AND_DATE = "AVG_ORDERS_PER_DAY_BY_SUBSIDIARY_AND_DATE";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

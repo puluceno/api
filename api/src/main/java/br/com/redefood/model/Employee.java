@@ -45,7 +45,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	@NamedQuery(name = Employee.FIND_BY_CPF, query = "SELECT e FROM Employee e WHERE e.cpf = :cpf"),
 	@NamedQuery(name = Employee.FIND_ID_PROFILE_BY_LOGIN, query = "SELECT e.profile.idProfile FROM Employee e WHERE e.idEmployee = :idEmployee"),
 	@NamedQuery(name = Employee.FIND_BY_SUBSIDIARY_AND_PROFILE, query = "SELECT e FROM Employee e JOIN e.subsidiaryList s WHERE s.idSubsidiary = :idSubsidiary AND e.profile.idProfile = :idProfile AND e.active = true ORDER BY e.firstName ASC"),
-	@NamedQuery(name = Employee.FIND_DELIVERIES_BY_MOTOBOY, query = "SELECT new br.com.redefood.model.complex.MotoboyDeliveriesDTO(concat(e.firstName, ' ', e.lastName), e.idEmployee, count(o)) FROM Orders o JOIN o.employee e WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND e.profile.idProfile = 4 AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED' AND o.board IS NULL") })
+	@NamedQuery(name = Employee.FIND_DELIVERIES_BY_MOTOBOY, query = "SELECT new br.com.redefood.model.complex.MotoboyDeliveriesDTO(concat(e.firstName, ' ', e.lastName), e.idEmployee, count(o)) FROM Orders o JOIN o.employee e WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND e.profile.idProfile = 4 AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED' AND o.board IS NULL GROUP BY e.idEmployee") })
 public class Employee implements Serializable {
 
 	public static final String FIND_ALL_LESS_MYSELF = "FIND_ALL_LESS_MYSELF";

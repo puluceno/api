@@ -84,9 +84,9 @@ public class DashboardResource extends HibernateMapper {
 			Map<String, Object> dashboardData = new LinkedHashMap<String, Object>();
 
 			// Orders money
-			List resultMoney = em.createNamedQuery(Subsidiary.FIND_TOTAL_MONEY_BY_DATE)
+			Object[] resultMoney = (Object[]) em.createNamedQuery(Subsidiary.FIND_TOTAL_MONEY_BY_DATE)
 					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
-					.getResultList();
+					.getSingleResult();
 
 			// Orders money grouped by orderType
 			List resultMoneyOrderType = em.createNamedQuery(Subsidiary.FIND_TOTAL_MONEY_BY_ORDERTYPE)
@@ -97,6 +97,12 @@ public class DashboardResource extends HibernateMapper {
 			Long qtdy = (Long) em.createNamedQuery(Orders.FIND_QTY_BETWEEN_DATES)
 					.setParameter("idSubsidiary", idSubsidiary).setParameter("from", from).setParameter("to", to)
 					.getSingleResult();
+
+			// Avg Orders qty by day
+			BigDecimal avgOrderQtyByDay = new BigDecimal((String) em
+					.createNamedQuery(Orders.AVG_ORDERS_PER_DAY_BY_SUBSIDIARY_AND_DATE).setParameter("from", from)
+					.setParameter("to", to).setParameter("idSubsidiary", idSubsidiary).getSingleResult()).setScale(2,
+							RoundingMode.HALF_UP);
 
 			// Orders price
 			Double avgOrderPrice = (Double) em.createNamedQuery(Orders.FIND_AVG_ORDER_PRICE)
@@ -282,19 +288,20 @@ public class DashboardResource extends HibernateMapper {
 
 			// Orders related stuff
 			dashboardData.put("orderQty", qtdy);
+
+			// Avg Orders qty per day by subsidiary and date
+			dashboardData.put("avgOrderQtyByDay", avgOrderQtyByDay);
+
+			// Order price related stuff
 			dashboardData.put("avgOrderPrice",
 					new BigDecimal(avgOrderPrice == null ? 0 : avgOrderPrice).setScale(2, RoundingMode.HALF_DOWN));
 			dashboardData.put("minOrderPrice", minO);
 			dashboardData.put("maxOrderPrice", maxO);
 
 			// Adds the money sum
-			for (Object money : resultMoney) {
-				String a[] = mapper.writeValueAsString(money).replace("[", "").replace("]", "").replace("\"", "")
-						.split(",");
-				dashboardData.put("totalOrderValue", a[0]);
-				dashboardData.put("totalDeliveryValue", a[1]);
-				dashboardData.put("totalRenevue", a[2]);
-			}
+			dashboardData.put("totalOrderValue", resultMoney[0]);
+			dashboardData.put("totalDeliveryValue", resultMoney[1]);
+			dashboardData.put("totalRenevue", resultMoney[2]);
 
 			if (avgT == null) {
 				dashboardData.put("avgPrepareTime", avgT);
@@ -380,7 +387,9 @@ public class DashboardResource extends HibernateMapper {
 
 	/**
 	 * Returns the native query given its name
-	 * @param queryName queryName
+	 * 
+	 * @param queryName
+	 *            queryName
 	 * @return The native query
 	 */
 	private String getNativeQuery(String queryName) {
@@ -396,6 +405,8 @@ public class DashboardResource extends HibernateMapper {
 			query.append("FROM Orders o ");
 			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
 			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
+			// Filters only Delivery Online
+			query.append("AND o.idOrderType = 1 ");
 			query.append("GROUP BY dataa) temp ");
 			query.append("GROUP BY day_of_week ");
 			query.append("ORDER BY day_num");
@@ -413,6 +424,8 @@ public class DashboardResource extends HibernateMapper {
 			query.append("FROM Orders o ");
 			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
 			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
+			// Filters only Delivery Online
+			query.append("AND o.idOrderType = 1 ");
 			query.append("GROUP BY hour_of_day, ");
 			query.append("dataa) temp ");
 			query.append("GROUP BY hour_of_day, ");
@@ -433,6 +446,8 @@ public class DashboardResource extends HibernateMapper {
 			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
 			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
 			query.append("AND ohm.idmeal = :idMeal ");
+			// Filters only Delivery Online
+			query.append("AND o.idOrderType = 1 ");
 			query.append("GROUP BY dataa) temp ");
 			query.append("GROUP BY day_of_week ");
 			query.append("ORDER BY day_num");
@@ -452,6 +467,8 @@ public class DashboardResource extends HibernateMapper {
 			query.append("WHERE o.idsubsidiary = :idSubsidiary ");
 			query.append("AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED'");
 			query.append("AND ohm.idmeal = :idMeal ");
+			// Filters only Delivery Online
+			query.append("AND o.idOrderType = 1 ");
 			query.append("GROUP  BY hour_of_day, ");
 			query.append("dataa) temp ");
 			query.append("GROUP BY hour_of_day, ");
