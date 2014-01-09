@@ -72,22 +72,26 @@ public class UserResource extends HibernateMapper {
 	private static ObjectMapper mapper = HibernateMapper.getMapper();
 
 	/**
-	 * Retrieves informations of all users present into the database. Offset and
-	 * Limit are required parameters.
+	 * Retrieves informations of all users present into the database by the
+	 * given name or phone. Offset and Limit are required parameters.
 	 * 
 	 * @param firstName
 	 * @param offset
 	 * @param limit
-	 * @return
+	 * @param phone
+	 * @return List<Users>
 	 */
 	@GET
 	@Produces("application/json;charset=UTF8")
 	public String listByName(@HeaderParam("locale") String locale,
-			@DefaultValue("") @QueryParam("name") String firstName,
+			@DefaultValue("") @QueryParam("name") String firstName, @QueryParam("phone") String phone,
 			@DefaultValue("1") @QueryParam("offset") Integer offset,
 			@DefaultValue("20") @QueryParam("limit") Integer limit) {
 
 		try {
+			if (phone != null && !phone.isEmpty())
+				return mapper.writeValueAsString(em.createNamedQuery(User.FIND_USER_BY_CELLPHONE_OR_PHONE)
+						.setParameter("phone", phone).getResultList());
 			return mapper.writeValueAsString(em.createNamedQuery(User.FIND_USER_BY_FIRSTNAME)
 					.setParameter("firstName", "%" + firstName + "%").setMaxResults(limit).setFirstResult(offset - 1)
 					.getResultList());
@@ -100,7 +104,7 @@ public class UserResource extends HibernateMapper {
 	}
 
 	/**
-	 * Retrieves information of a single user.
+	 * Retrieves information of a single user by his ID.
 	 * 
 	 * @param id
 	 * @param token
