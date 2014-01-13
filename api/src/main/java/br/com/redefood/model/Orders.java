@@ -47,7 +47,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "Orders", schema = "RedeFood")
 @NamedQueries({
 	@NamedQuery(name = "Orders.findAllByUser", query = "SELECT o FROM Orders o WHERE o.user.idUser = :idUser ORDER BY o.orderMade DESC"),
-	@NamedQuery(name = Orders.FIND_LAST_LOCAL_ORDER_NUMBER, query = "SELECT COALESCE(o.localOrderNumber,0) FROM Orders o WHERE o.idOrders =(SELECT MAX(ord.idOrders) FROM Orders ord WHERE ord.subsidiary.idSubsidiary = :idSubsidiary)"),
+	@NamedQuery(name = Orders.FIND_LAST_LOCAL_ORDER_NUMBER, query = "SELECT COALESCE(o.localOrderNumber,0) FROM Orders o WHERE o.idOrders =(SELECT MAX(ord.idOrders) FROM Orders ord WHERE ord.subsidiary.idSubsidiary = :idSubsidiary AND ord.orderType.idOrderType IN (4,5,8) )"),
 	@NamedQuery(name = "Orders.findBySubsidiaryAndUser", query = "SELECT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.user.idUser = :idUser"),
 	@NamedQuery(name = "Orders.findByIdOrderAndUser", query = "SELECT o FROM Orders o WHERE o.idOrders = :idOrders AND o.user.idUser = :idUser"),
 	@NamedQuery(name = "Orders.findByIdSubsidiaryAndStatus", query = "SELECT o FROM Orders o WHERE o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus LIKE :orderStatus"),
