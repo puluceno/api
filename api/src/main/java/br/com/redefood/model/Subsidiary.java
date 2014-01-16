@@ -58,7 +58,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	@NamedQuery(name = Subsidiary.FIND_MIN_PREPARETIME, query = "SELECT MIN(TIME_TO_SEC(TIMEDIFF(o.orderSent, o.orderMade))) FROM Orders o WHERE o.orderSent IS NOT NULL AND o.orderMade BETWEEN :from AND :to AND o.subsidiary.idSubsidiary = :idSubsidiary AND o.orderStatus <> 'CANCELED'"),
 	@NamedQuery(name = Subsidiary.FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID, query = "SELECT s.email FROM Subsidiary s JOIN s.employeeList e WHERE e.idEmployee = :idEmployee"),
 	@NamedQuery(name = Subsidiary.FIND_SUBSIDIARY_SUBDOMAIN, query = "SELECT s.idRestaurant.subdomain FROM Subsidiary s WHERE s.idSubsidiary = :idSubsidiary"),
-	@NamedQuery(name = Subsidiary.FIND_OWNER_LOGIN_BY_ID_SUBSIDIARY, query = "SELECT new br.com.redefood.model.complex.UserLogin(e.cpf, e.password, 'localhost') FROM Subsidiary s JOIN s.employeeList e WHERE s.idSubsidiary = :idSubsidiary AND e.profile.idProfile = :idProfile") })
+	@NamedQuery(name = Subsidiary.FIND_OWNER_LOGIN_BY_ID_SUBSIDIARY, query = "SELECT new br.com.redefood.model.complex.UserLogin(e.cpf, e.password, 'localhost') FROM Subsidiary s JOIN s.employeeList e WHERE s.idSubsidiary = :idSubsidiary AND e.profile.idProfile = :idProfile"),
+	@NamedQuery(name = Subsidiary.FIND_AVG_RATINGS_BY_SUBSIDIARY, query = "SELECT ROUND(AVG(r.delivery), 1), ROUND(AVG(r.costBenefit), 1), ROUND(AVG(r.experience), 1),ROUND(AVG(mr.mealRating), 1), ROUND((AVG(r.delivery) + AVG(r.costBenefit) + AVG(r.experience) + AVG(mr.mealRating)) / 4, 1) FROM Rating r JOIN r.mealRatings mr WHERE r.subsidiary.idSubsidiary = :idSubsidiary") })
 public class Subsidiary implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -78,6 +79,7 @@ public class Subsidiary implements Serializable {
 	public static final String FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID = "FIND_SUBSIDIARY_EMAIL_BY_EMPLOYEE_ID";
 	public static final String FIND_SUBSIDIARY_SUBDOMAIN = "FIND_SUBSIDIARY_SUBDOMAIN";
 	public static final String FIND_OWNER_LOGIN_BY_ID_SUBSIDIARY = "FIND_OWNER_LOGIN_BY_ID_SUBSIDIARY";
+	public static final String FIND_AVG_RATINGS_BY_SUBSIDIARY = "FIND_AVG_RATINGS_BY_SUBSIDIARY";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -201,6 +203,8 @@ public class Subsidiary implements Serializable {
 
 	@Transient
 	private Boolean subsidiaryOpen;
+	@Transient
+	private HashMap<String, Object> avgRating;
 
 	public Subsidiary() {
 	}
@@ -677,6 +681,14 @@ public class Subsidiary implements Serializable {
 
 	public void setDiscountCoupons(List<DiscountCoupon> discountCoupons) {
 		this.discountCoupons = discountCoupons;
+	}
+
+	public HashMap<String, Object> getAvgRating() {
+		return avgRating;
+	}
+
+	public void setAvgRating(HashMap<String, Object> avgRating) {
+		this.avgRating = avgRating;
 	}
 
 	@Override

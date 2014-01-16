@@ -65,6 +65,8 @@ public class SubsidiaryResource extends HibernateMapper {
 	private Logger log;
 	@Inject
 	private RedeFoodExceptionHandler eh;
+	@Inject
+	private SquareResource squareResource;
 
 	private static ObjectMapper mapper = HibernateMapper.getMapper();
 
@@ -167,6 +169,7 @@ public class SubsidiaryResource extends HibernateMapper {
 			}
 
 			subsidiary.setSubsidiaryOpen(isSubsidiaryOpen(locale, idSubsidiary));
+			subsidiary.setAvgRating(squareResource.calculateSubsidiaryAvgRating(subsidiary.getId()));
 
 			return mapper.writeValueAsString(subsidiary);
 

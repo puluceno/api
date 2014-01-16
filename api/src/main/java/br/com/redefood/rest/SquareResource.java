@@ -23,11 +23,9 @@ import br.com.redefood.exceptions.RedeFoodExceptionHandler;
 import br.com.redefood.model.City;
 import br.com.redefood.model.DeliveryArea;
 import br.com.redefood.model.Meal;
-import br.com.redefood.model.MealRating;
 import br.com.redefood.model.Module;
 import br.com.redefood.model.Neighborhood;
 import br.com.redefood.model.OpenTime;
-import br.com.redefood.model.Rating;
 import br.com.redefood.model.Restaurant;
 import br.com.redefood.model.Subsidiary;
 import br.com.redefood.model.SubsidiaryMessages;
@@ -177,7 +175,7 @@ public class SquareResource extends HibernateMapper {
 					}
 
 					// Average Rating
-					rest.put("averageRating", calculateSubsidiaryAvgRating(sub));
+					rest.put("averageRating", calculateSubsidiaryAvgRating(sub.getId()));
 
 					squareList.add(rest);
 				}
@@ -189,49 +187,21 @@ public class SquareResource extends HibernateMapper {
 		}
 	}
 
-	private Map<String, Object> calculateSubsidiaryAvgRating(Subsidiary sub) {
+	public HashMap<String, Object> calculateSubsidiaryAvgRating(Short idSubsidiary) {
 		HashMap<String, Object> avgRating = new HashMap<String, Object>();
-
-		int sumDelivery = 0;
-		Double avgDelivery = 0.0;
-		int sumCostBenefit = 0;
-		Double avgCostBenefit = 0.0;
-		int sumExperience = 0;
-		Double avgExperience = 0.0;
-		int sumMealRating = 0;
-		Double avgMealRating = 0.0;
-		int sizeMealRating = 0;
 		try {
-			if (sub.getRatingList() != null && !sub.getRatingList().isEmpty()) {
-				for (Rating rating : sub.getRatingList()) {
-					sumDelivery += rating.getDelivery() == null ? 0 : rating.getDelivery();
-					sumCostBenefit += rating.getCostBenefit() == null ? 0 : rating.getCostBenefit();
-					sumExperience += rating.getExperience() == null ? 0 : rating.getExperience();
+			Object[] avgRatings = (Object[]) em.createNamedQuery(Subsidiary.FIND_AVG_RATINGS_BY_SUBSIDIARY)
+					.setParameter("idSubsidiary", idSubsidiary).getSingleResult();
 
-					for (MealRating mealRating : rating.getMealRatings()) {
-						sumMealRating += mealRating.getMealRating() == null ? 0 : mealRating.getMealRating();
-					}
-					sizeMealRating += rating.getMealRatings().size();
-				}
-				if (sub.getRatingList().size() != 0) {
-					avgDelivery = (double) (sumDelivery / sub.getRatingList().size());
-					avgCostBenefit = (double) (sumCostBenefit / sub.getRatingList().size());
-					avgExperience = (double) (sumExperience / sub.getRatingList().size());
-				}
-				if (sizeMealRating != 0) {
-					avgMealRating = (double) (sumMealRating / sizeMealRating);
-				}
-			}
+			avgRating.put("avgDelivery", avgRatings[0]);
+			avgRating.put("avgCostBenefit", avgRatings[1]);
+			avgRating.put("avgExperience", avgRatings[2]);
+			avgRating.put("avgMealRating", avgRatings[3]);
+			avgRating.put("avgRating", avgRatings[4]);
+
 		} catch (Exception e) {
 			return null;
 		}
-
-		avgRating.put("avgDelivery", avgDelivery);
-		avgRating.put("avgCostBenefit", avgCostBenefit);
-		avgRating.put("avgExperience", avgExperience);
-		avgRating.put("avgMealRating", avgMealRating);
-		avgRating.put("avgRating", (avgDelivery + avgCostBenefit + avgExperience + avgMealRating) / 4);
-
 		return avgRating;
 	}
 
@@ -338,7 +308,7 @@ public class SquareResource extends HibernateMapper {
 			rest.put("deliveryAreas", sub.getDeliveryAreas());
 
 			// Average Rating
-			rest.put("averageRating", calculateSubsidiaryAvgRating(sub));
+			rest.put("averageRating", calculateSubsidiaryAvgRating(sub.getId()));
 
 			square.add(rest);
 
