@@ -226,8 +226,9 @@ public class SubsidiaryResource extends HibernateMapper {
 			@PathParam("idSubsidiary") Short idSubsidiary) {
 
 		try {
-			List<Neighborhood> resultList = em.createNamedQuery(Neighborhood.FIND_AVAILABLE_NEIGHBORHOOD_BY_SUBSIDIARY_AND_CITY).setParameter("idSubsidiary", idSubsidiary)
-					.getResultList();
+			List<Neighborhood> resultList = em
+					.createNamedQuery(Neighborhood.FIND_AVAILABLE_NEIGHBORHOOD_BY_SUBSIDIARY_AND_CITY)
+					.setParameter("idSubsidiary", idSubsidiary).getResultList();
 
 			return mapper.writeValueAsString(resultList);
 		} catch (Exception e) {
