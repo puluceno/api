@@ -35,94 +35,94 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Path("/neighborhood")
 @Stateless
 public class NeighborhoodResource extends HibernateMapper {
-    private static final ObjectMapper mapper = HibernateMapper.getMapper();
-    @Inject
-    private EntityManager em;
-    @Inject
-    private Logger log;
-    @Inject
-    private RedeFoodExceptionHandler eh;
-    
-    @SuppressWarnings("unchecked")
-    @GET
-    @Produces("application/json;charset=UTF8")
-    public String lookupNeighborhood(@HeaderParam("locale") String locale,
-	    @DefaultValue("") @QueryParam("city") String city, @DefaultValue("") @QueryParam("name") String name,
-	    @DefaultValue("1") @QueryParam("offset") Integer offset,
-	    @DefaultValue("20") @QueryParam("limit") Integer limit) {
-	
-	List<Neighborhood> neighbors = null;
-	
-	if (name.equals("") && city.equals("")) {
-	    neighbors = em.createNamedQuery(Neighborhood.FIND_ALL_NEIGHBORHOOD).setMaxResults(limit)
-		    .setFirstResult(offset - 1).getResultList();
-	} else if (city.equals("") && !name.equals("")) {
-	    neighbors = em
-		    .createNamedQuery(Neighborhood.FIND_NEIGHBORHOOD_BY_NAME)
-		    .setParameter("name",
-			    RedeFoodConstants.SQL_LIKE_WILDCARD + name + RedeFoodConstants.SQL_LIKE_WILDCARD)
-			    .setMaxResults(limit).setFirstResult(offset - 1).getResultList();
-	} else if (name.equals("") && !city.equals("")) {
-	    neighbors = em
-		    .createNamedQuery(Neighborhood.FIND_NEIGHBORHOOD_BY_CITY_NAME)
-		    .setParameter("city",
-			    RedeFoodConstants.SQL_LIKE_WILDCARD + city + RedeFoodConstants.SQL_LIKE_WILDCARD)
-			    .setMaxResults(limit).setFirstResult(offset - 1).getResultList();
-	} else if (!name.equals("") && !city.equals("")) {
-	    neighbors = em
-		    .createNamedQuery(Neighborhood.FIND_NEIGHBORHOOD_BY_NAME_AND_CITY)
-		    .setParameter("name",
-			    RedeFoodConstants.SQL_LIKE_WILDCARD + name + RedeFoodConstants.SQL_LIKE_WILDCARD)
-			    .setParameter("city",
-				    RedeFoodConstants.SQL_LIKE_WILDCARD + city + RedeFoodConstants.SQL_LIKE_WILDCARD)
-				    .setMaxResults(limit).setFirstResult(offset - 1).getResultList();
+	private static final ObjectMapper mapper = HibernateMapper.getMapper();
+	@Inject
+	private EntityManager em;
+	@Inject
+	private Logger log;
+	@Inject
+	private RedeFoodExceptionHandler eh;
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Produces("application/json;charset=UTF8")
+	public String lookupNeighborhood(@HeaderParam("locale") String locale,
+			@DefaultValue("") @QueryParam("city") String city, @DefaultValue("") @QueryParam("name") String name,
+			@DefaultValue("1") @QueryParam("offset") Integer offset,
+			@DefaultValue("20") @QueryParam("limit") Integer limit) {
+
+		List<Neighborhood> neighbors = null;
+
+		if (name.equals("") && city.equals("")) {
+			neighbors = em.createNamedQuery(Neighborhood.FIND_ALL_NEIGHBORHOOD).setMaxResults(limit)
+					.setFirstResult(offset - 1).getResultList();
+		} else if (city.equals("") && !name.equals("")) {
+			neighbors = em
+					.createNamedQuery(Neighborhood.FIND_NEIGHBORHOOD_BY_NAME)
+					.setParameter("name",
+							RedeFoodConstants.SQL_LIKE_WILDCARD + name + RedeFoodConstants.SQL_LIKE_WILDCARD)
+							.setMaxResults(limit).setFirstResult(offset - 1).getResultList();
+		} else if (name.equals("") && !city.equals("")) {
+			neighbors = em
+					.createNamedQuery(Neighborhood.FIND_NEIGHBORHOOD_BY_CITY_NAME)
+					.setParameter("city",
+							RedeFoodConstants.SQL_LIKE_WILDCARD + city + RedeFoodConstants.SQL_LIKE_WILDCARD)
+							.setMaxResults(limit).setFirstResult(offset - 1).getResultList();
+		} else if (!name.equals("") && !city.equals("")) {
+			neighbors = em
+					.createNamedQuery(Neighborhood.FIND_NEIGHBORHOOD_BY_NAME_AND_CITY)
+					.setParameter("name",
+							RedeFoodConstants.SQL_LIKE_WILDCARD + name + RedeFoodConstants.SQL_LIKE_WILDCARD)
+							.setParameter("city",
+									RedeFoodConstants.SQL_LIKE_WILDCARD + city + RedeFoodConstants.SQL_LIKE_WILDCARD)
+									.setMaxResults(limit).setFirstResult(offset - 1).getResultList();
+		}
+
+		try {
+			return mapper.writeValueAsString(neighbors);
+
+		} catch (Exception e) {
+			return eh.neighborhoodExceptions(e, locale).toString();
+		}
 	}
-	
-	try {
-	    return mapper.writeValueAsString(neighbors);
-	    
-	} catch (Exception e) {
-	    return eh.neighborhoodExceptions(e, locale).toString();
+
+	@GET
+	@Path("/{id:[0-9][0-9]*}")
+	@Produces("application/json;charset=UTF8")
+	public String lookupNeighborhoodById(@HeaderParam("locale") String locale, @PathParam("id") Short id) {
+
+		try {
+
+			return mapper.writeValueAsString(em.find(Neighborhood.class, id));
+
+		} catch (Exception e) {
+			return eh.neighborhoodExceptions(e, locale).toString();
+		}
 	}
-    }
-    
-    @GET
-    @Path("/{id:[0-9][0-9]*}")
-    @Produces("application/json;charset=UTF8")
-    public String lookupNeighborhoodById(@HeaderParam("locale") String locale, @PathParam("id") Short id) {
-	
-	try {
-	    
-	    return mapper.writeValueAsString(em.find(Neighborhood.class, id));
-	    
-	} catch (Exception e) {
-	    return eh.neighborhoodExceptions(e, locale).toString();
+
+	@POST
+	@Path("/new/{idCity:[0-9][0-9]")
+	@Consumes("application/json")
+	public Response addNeighborhood(@HeaderParam("locale") String locale, @PathParam("idCity") Short idCity,
+			Neighborhood neighborhood) {
+
+		log.log(Level.INFO, "Registering " + neighborhood.getName());
+		City city = null;
+
+		try {
+			// validate the city
+			city = em.find(City.class, idCity);
+			if (city == null)
+				throw new Exception("invalid city");
+
+			em.persist(neighborhood);
+			String answer = LocaleResource.getProperty(locale).getProperty("neighborhood.added");
+			log.log(Level.INFO, answer);
+			return Response.status(201).entity(answer).build();
+
+		} catch (Exception e) {
+			return eh.neighborhoodExceptions(e, locale);
+		}
 	}
-    }
-    
-    @POST
-    @Path("/new/{idCity:[0-9][0-9]")
-    @Consumes("application/json")
-    public Response addNeighborhood(@HeaderParam("locale") String locale, @PathParam("idCity") Short idCity,
-	    Neighborhood neighborhood) {
-	
-	log.log(Level.INFO, "Registering " + neighborhood.getName());
-	City city = null;
-	
-	try {
-	    // validate the city
-	    city = em.find(City.class, idCity);
-	    if (city == null)
-		throw new Exception("invalid city");
-	    
-	    em.persist(neighborhood);
-	    String answer = LocaleResource.getProperty(locale).getProperty("neighborhood.added");
-	    log.log(Level.INFO, answer);
-	    return Response.status(201).entity(answer).build();
-	    
-	} catch (Exception e) {
-	    return eh.neighborhoodExceptions(e, locale);
-	}
-    }
-    
+
 }

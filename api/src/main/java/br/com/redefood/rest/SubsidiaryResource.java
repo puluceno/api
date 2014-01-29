@@ -1,5 +1,7 @@
 package br.com.redefood.rest;
 
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -233,6 +235,38 @@ public class SubsidiaryResource extends HibernateMapper {
 			return mapper.writeValueAsString(resultList);
 		} catch (Exception e) {
 			return eh.orderExceptionHandlerString(e, locale, null);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/{idSubsidiary:[0-9][0-9]*}/available-cities")
+	@Produces("application/json;charset=UTF8")
+	public Object findAvailableCities(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary) {
+		try {
+			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
+
+			if(subsidiary.getAddress().getCity().getState().getCityList().isEmpty()){
+				//consulta todas as cidades do bairro e cadastra no banco
+			}
+
+			String spec = "http://localhost:8080/cep/cities?uf="
+					+ subsidiary.getAddress().getCity().getState().getShortName();
+			List<City> citiesAttended = subsidiary.getCitiesAttended();
+			for (City city : citiesAttended) {
+				spec = spec.concat("&exclude=" + URLEncoder.encode(city.getName(), "UTF-8"));
+			}
+			URL url = new URL(spec);
+			List<String> readValue = mapper.readValue(url, List.class);
+			for (String string : readValue) {
+
+			}
+
+
+			return readValue;
+		} catch (Exception e) {
+			return eh.subsidiaryExceptionHandler(e, locale, "");
 		}
 	}
 
@@ -944,12 +978,10 @@ public class SubsidiaryResource extends HibernateMapper {
 	@PUT
 	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended")
 	public Response editCitiesAttended(@HeaderParam("locale") String locale,
-			@PathParam("idSubsidiary") Short idSubsidiary, List<City> citiesAttended) {
-
+			@PathParam("idSubsidiary") Short idSubsidiary, City cityAttended) {
+		// TODO fix this
 		try {
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-
-			subsidiary.setCitiesAttended(citiesAttended);
 
 			return Response.status(200).build();
 		} catch (Exception e) {
