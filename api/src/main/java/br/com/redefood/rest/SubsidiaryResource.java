@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -247,8 +248,8 @@ public class SubsidiaryResource extends HibernateMapper {
 		try {
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
 
-			if(subsidiary.getAddress().getCity().getState().getCityList().isEmpty()){
-				//consulta todas as cidades do bairro e cadastra no banco
+			if (subsidiary.getAddress().getCity().getState().getCityList().isEmpty()) {
+				// consulta todas as cidades do bairro e cadastra no banco
 			}
 
 			String spec = "http://localhost:8080/cep/cities?uf="
@@ -260,14 +261,35 @@ public class SubsidiaryResource extends HibernateMapper {
 			URL url = new URL(spec);
 			List<String> readValue = mapper.readValue(url, List.class);
 			for (String string : readValue) {
-
+				// TODO finish this, we have to return a list of cities, with
+				// name and id.
 			}
-
 
 			return readValue;
 		} catch (Exception e) {
 			return eh.subsidiaryExceptionHandler(e, locale, "");
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended")
+	@Produces("application/json;charset=UTF8")
+	public Object listCitiesAttended(@HeaderParam("locale") String locale, @PathParam("idSubsidiary") Short idSubsidiary) {
+
+		String query = "SELECT c.name, c.idCity FROM City c where c.idCity IN (SELECT a.id.idCity FROM  SubsidiaryCity a WHERE a.id.idSubsidiary = :idSubsidiary)";
+		List<Object[]> resultList = em.createQuery(query).setParameter("idSubsidiary", idSubsidiary).getResultList();
+
+		List<HashMap<String, Object>> citiesAttended = new ArrayList<HashMap<String, Object>>();
+
+		for (Object[] city : resultList) {
+			HashMap<String, Object> cityAttended = new HashMap<String, Object>();
+			cityAttended.put("name", city[0]);
+			cityAttended.put("id", city[1]);
+			citiesAttended.add(cityAttended);
+		}
+
+		return citiesAttended;
 	}
 
 	@OwnerOrManager
@@ -977,11 +999,26 @@ public class SubsidiaryResource extends HibernateMapper {
 	@OwnerOrManager
 	@PUT
 	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended")
-	public Response editCitiesAttended(@HeaderParam("locale") String locale,
+	public Response addCityAttended(@HeaderParam("locale") String locale,
 			@PathParam("idSubsidiary") Short idSubsidiary, City cityAttended) {
-		// TODO fix this
 		try {
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
+			subsidiary.getCitiesAttended().add(cityAttended);
+
+			return Response.status(200).build();
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerResponse(e, locale);
+		}
+	}
+
+	@OwnerOrManager
+	@DELETE
+	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended/{idCity:[0-9][0-9]*}")
+	public Response removeCityAttended(@HeaderParam("locale") String locale,
+			@PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idCity") Short idCity) {
+		try {
+			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
+			subsidiary.getCitiesAttended().remove(em.find(City.class, idCity));
 
 			return Response.status(200).build();
 		} catch (Exception e) {
