@@ -109,11 +109,11 @@ public class State implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((cityList == null) ? 0 : cityList.hashCode());
-		result = prime * result + ((idState == null) ? 0 : idState.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((region == null) ? 0 : region.hashCode());
-		result = prime * result + ((shortName == null) ? 0 : shortName.hashCode());
+		result = prime * result + (cityList == null ? 0 : cityList.hashCode());
+		result = prime * result + (idState == null ? 0 : idState.hashCode());
+		result = prime * result + (name == null ? 0 : name.hashCode());
+		result = prime * result + (region == null ? 0 : region.hashCode());
+		result = prime * result + (shortName == null ? 0 : shortName.hashCode());
 		return result;
 	}
 

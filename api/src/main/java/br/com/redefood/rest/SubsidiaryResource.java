@@ -1,7 +1,5 @@
 package br.com.redefood.rest;
 
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -10,6 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -70,6 +69,8 @@ public class SubsidiaryResource extends HibernateMapper {
 	private RedeFoodExceptionHandler eh;
 	@Inject
 	private SquareResource squareResource;
+	@Inject
+	private CepResource cepResource;
 
 	private static ObjectMapper mapper = HibernateMapper.getMapper();
 
@@ -247,49 +248,29 @@ public class SubsidiaryResource extends HibernateMapper {
 			@PathParam("idSubsidiary") Short idSubsidiary) {
 		try {
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-
-			if (subsidiary.getAddress().getCity().getState().getCityList().isEmpty()) {
-				// consulta todas as cidades do bairro e cadastra no banco
+			List<Object[]> cities = null;
+			if (!subsidiary.getCitiesAttended().isEmpty()) {
+				cities = em.createNamedQuery(City.FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE)
+						.setParameter("idState", subsidiary.getAddress().getCity().getState().getId())
+						.setParameter("citiesAttended", subsidiary.getCitiesAttended()).getResultList();
+			} else {
+				cities = em.createNamedQuery(City.FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE_WHEN_LIST_EMPTY)
+						.setParameter("idState", subsidiary.getAddress().getCity().getState().getId()).getResultList();
 			}
 
-			String spec = "http://localhost:8080/cep/cities?uf="
-					+ subsidiary.getAddress().getCity().getState().getShortName();
-			List<City> citiesAttended = subsidiary.getCitiesAttended();
-			for (City city : citiesAttended) {
-				spec = spec.concat("&exclude=" + URLEncoder.encode(city.getName(), "UTF-8"));
-			}
-			URL url = new URL(spec);
-			List<String> readValue = mapper.readValue(url, List.class);
-			for (String string : readValue) {
-				// TODO finish this, we have to return a list of cities, with
-				// name and id.
+			List<HashMap<String, Object>> citiesAvailable = new ArrayList<HashMap<String, Object>>();
+
+			for (Object[] result : cities) {
+				HashMap<String, Object> city = new HashMap<String, Object>();
+				city.put("id", result[0]);
+				city.put("name", result[1]);
+				citiesAvailable.add(city);
 			}
 
-			return readValue;
+			return mapper.writeValueAsString(citiesAvailable);
 		} catch (Exception e) {
 			return eh.subsidiaryExceptionHandler(e, locale, "");
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	@GET
-	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended")
-	@Produces("application/json;charset=UTF8")
-	public Object listCitiesAttended(@HeaderParam("locale") String locale, @PathParam("idSubsidiary") Short idSubsidiary) {
-
-		String query = "SELECT c.name, c.idCity FROM City c where c.idCity IN (SELECT a.id.idCity FROM  SubsidiaryCity a WHERE a.id.idSubsidiary = :idSubsidiary)";
-		List<Object[]> resultList = em.createQuery(query).setParameter("idSubsidiary", idSubsidiary).getResultList();
-
-		List<HashMap<String, Object>> citiesAttended = new ArrayList<HashMap<String, Object>>();
-
-		for (Object[] city : resultList) {
-			HashMap<String, Object> cityAttended = new HashMap<String, Object>();
-			cityAttended.put("name", city[0]);
-			cityAttended.put("id", city[1]);
-			citiesAttended.add(cityAttended);
-		}
-
-		return citiesAttended;
 	}
 
 	@OwnerOrManager
@@ -894,7 +875,7 @@ public class SubsidiaryResource extends HibernateMapper {
 		}
 	}
 
-	// @Securable
+	@Securable
 	@GET
 	@Path("/{idSubsidiary:[0-9][0-9]*}/boards")
 	@Produces("application/json;charset=UTF8")
@@ -910,7 +891,7 @@ public class SubsidiaryResource extends HibernateMapper {
 		}
 	}
 
-	// @OwnerOrManager
+	@OwnerOrManager
 	@POST
 	@Path("/{idSubsidiary:[0-9][0-9]*}/boards")
 	public Response addBoardToSubsidiary(@HeaderParam("locale") String locale,
@@ -937,7 +918,7 @@ public class SubsidiaryResource extends HibernateMapper {
 		}
 	}
 
-	// @OwnerOrManager
+	@OwnerOrManager
 	@DELETE
 	@Path("/{idSubsidiary:[0-9][0-9]*}/boards/{idBoard:[0-9][0-9]*}")
 	public Response removeBoardFromSubsidiary(@HeaderParam("locale") String locale,
@@ -955,7 +936,7 @@ public class SubsidiaryResource extends HibernateMapper {
 		}
 	}
 
-	// @OwnerOrManager
+	@OwnerOrManager
 	@PUT
 	@Path("/{idSubsidiary:[0-9][0-9]*}/boards/{idBoard:[0-9][0-9]*}")
 	@Consumes("application/json")
@@ -998,14 +979,20 @@ public class SubsidiaryResource extends HibernateMapper {
 
 	@OwnerOrManager
 	@PUT
-	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended")
+	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended/{idCity:[0-9][0-9]*}")
 	public Response addCityAttended(@HeaderParam("locale") String locale,
-			@PathParam("idSubsidiary") Short idSubsidiary, City cityAttended) {
+			@PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idCity") Short idCity) {
 		try {
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-			subsidiary.getCitiesAttended().add(cityAttended);
+			City city = em.find(City.class, idCity);
 
-			return Response.status(200).build();
+			subsidiary.getCitiesAttended().add(city);
+
+			if (city.getNeighborhoods().isEmpty()) {
+				cepResource.registerNeighborhoodsToNewCity(city);
+			}
+
+			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
@@ -1018,12 +1005,50 @@ public class SubsidiaryResource extends HibernateMapper {
 			@PathParam("idSubsidiary") Short idSubsidiary, @PathParam("idCity") Short idCity) {
 		try {
 			Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
-			subsidiary.getCitiesAttended().remove(em.find(City.class, idCity));
+			City city = em.find(City.class, idCity);
+			subsidiary.getCitiesAttended().remove(city);
+			removeDeliveryAreasByCityAndSubsidiary(idCity, idSubsidiary);
 
 			return Response.status(200).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
+	}
+
+	/**
+	 * Removes all neighborhoods from a subsdidiary which had an attended city
+	 * removed.
+	 * 
+	 * @param {@link City} city
+	 * @param {@link Subsidiary} subsidiary
+	 */
+	@Asynchronous
+	private void removeDeliveryAreasByCityAndSubsidiary(Short idCity, Short idSubsidiary) {
+		String query = "DELETE d FROM DeliveryArea d JOIN Neighborhood n USING(idNeighborhood) JOIN City c USING(idCity) WHERE d.idSubsidiary = :idSubsidiary AND c.idCity = :idCity";
+		int updatedRows = em.createNativeQuery(query).setParameter("idSubsidiary", idSubsidiary)
+				.setParameter("idCity", idCity).executeUpdate();
+		log.log(Level.INFO, updatedRows + " delivery areas removed.");
+	}
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/{idSubsidiary:[0-9][0-9]*}/cities-attended")
+	@Produces("application/json;charset=UTF8")
+	public Object findCitiesAttended(@HeaderParam("locale") String locale, @PathParam("idSubsidiary") Short idSubsidiary) {
+
+		List<Object[]> resultList = em.createNamedQuery(Subsidiary.FIND_ATTENDED_CITIES)
+				.setParameter("idSubsidiary", idSubsidiary).getResultList();
+
+		List<HashMap<String, Object>> citiesAttended = new ArrayList<HashMap<String, Object>>();
+
+		for (Object[] city : resultList) {
+			HashMap<String, Object> cityAttended = new HashMap<String, Object>();
+			cityAttended.put("name", city[0]);
+			cityAttended.put("id", city[1]);
+			citiesAttended.add(cityAttended);
+		}
+
+		return citiesAttended;
 	}
 
 	@GET

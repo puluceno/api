@@ -174,8 +174,9 @@ public class CepResource extends HibernateMapper {
 	 * 
 	 * @param city
 	 */
+	@Asynchronous
 	@SuppressWarnings("unchecked")
-	private void registerNeighborhoodsToNewCity(City city) {
+	public void registerNeighborhoodsToNewCity(City city) {
 		log.log(Level.INFO, "Neighborhoods being fetch from CEP WS to city " + city.getName() + " - "
 				+ city.getState().getShortName().toUpperCase());
 		try {

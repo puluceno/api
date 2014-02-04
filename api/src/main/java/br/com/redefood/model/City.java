@@ -38,8 +38,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 	@NamedQuery(name = City.FIND_CITY_BY_ID, query = "SELECT c FROM City c WHERE c.idCity = :idCity"),
 	@NamedQuery(name = City.FIND_CITY_BY_NAME, query = "SELECT c FROM City c WHERE c.name LIKE :name"),
 	@NamedQuery(name = City.FIND_ATTENDED_CITY, query = "SELECT DISTINCT n.idCity FROM DeliveryArea d INNER JOIN d.neighborhood n"),
-	//@NamedQuery(name = City.FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE, query = "")
-})
+	@NamedQuery(name = City.FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE, query = "SELECT c.idCity, c.name FROM City c WHERE c.state.idState = :idState AND c NOT IN (:citiesAttended)"),
+	@NamedQuery(name = City.FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE_WHEN_LIST_EMPTY, query = "SELECT c.idCity, c.name FROM City c WHERE c.state.idState = :idState") })
 public class City implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -48,6 +48,7 @@ public class City implements Serializable {
 	public static final String FIND_CITY_BY_NAME = "FIND_CITY_BY_NAME";
 	public static final String FIND_ATTENDED_CITY = "FIND_ATTENDED_CITY";
 	public static final String FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE = "FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE";
+	public static final String FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE_WHEN_LIST_EMPTY = "FIND_AVAILABLE_CITY_BY_SUBSIDIARY_AND_STATE_WHEN_LIST_EMPTY";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
