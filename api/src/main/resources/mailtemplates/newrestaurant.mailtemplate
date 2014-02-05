@@ -183,7 +183,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                       </tr>
                       <tr>
                         <td valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
-                          Qualquer d&uacute;vida, informa&ccedil;&atilde;o ou se precisar de ajuda, por favor, estarei aqui ansioso para poder lhe ajudar.
+                          Qualquer d&uacute;vida, informa&ccedil;&atilde;o ou se precisar de ajuda, por favor, estaremos aqui para poder lhe ajudar.
                         </td>
                       </tr>
                       <tr>
@@ -191,7 +191,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                       </tr>
                       <tr>
                         <td valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
-                          Ah! Quase me esqueci! Tamb&eacute;m temos um sistema de ajuda no site, caso voc&ecirc; n&atilde;o queira nos escrever. Ele fica em <a href="http://www.go.redefood.com.br/help"> <b>aqui!</b></a>
+                          Ah! Quase me esqueci! Tamb&eacute;m temos um sistema de ajuda no site, caso voc&ecirc; n&atilde;o queira nos escrever. Ele fica em <a href="http://www.redefood.com.br/help"> <b>aqui!</b></a>
                         </td>
                       </tr>
                     </table>
@@ -226,10 +226,10 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                               <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">Thiago Vieira </td>
                             </tr>
                             <tr>
-                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">Gerente comercial RedeFood</td>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">Gerente RedeFood</td>
                             </tr>
                             <tr>
-                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">contato@redefood.com.br (Segunda a Sexta das 9h às 19h)</td>
+                              <td align="left" valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#FFF; font-size:14px; line-height:26px;">suporte@redefood.com.br</td>
                             </tr>
                           </table>
                           <!-- end right -->

@@ -151,7 +151,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                     <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
-                         Agora ficou f&aacute;cil, basta voc&ecirc; acessar o <a href="http://www.admin.redefood.com.br"> Painel Administrador </a> e realizar esses passos:
+                         Agora ficou f&aacute;cil, basta voc&ecirc; acessar o <a href={8}> Painel Administrador </a> e realizar esses passos:
                         </td>
                       </tr>
                       <tr>
@@ -162,7 +162,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                     <table class="table3-1" order="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
-                         1 - Realizar o login em sua loja utilizando seu cpf e esta senha:
+                         1 - Realizar o login em sua loja utilizando seu cpf ({7}) e esta senha:
                         </td>
                       </tr>
                     </table>
@@ -213,7 +213,7 @@ table[class="footer-column"] '{' width: 100% !important; text-align: center !imp
                       </tr>
                       <tr>
                         <td valign="top" style="text-align: justify; font-family:'open sans', arial, sans-serif; color:#7f8c8d; font-size:14px; line-height:26px;">
-                         Viu como &eacute; f&aacute;cil? Mas qualquer coisa tamb&eacute;m temos um sistema de ajuda no site, caso voc&ecirc; n&atilde;o queira me escrever para tirar alguma d&uacute;vida. Ele fica <a href="http://www.go.redefood.com.br/docs">aqui!</a>
+                         Viu como &eacute; f&aacute;cil? Mas qualquer coisa tamb&eacute;m temos um sistema de ajuda no site, caso voc&ecirc; n&atilde;o queira me escrever para tirar alguma d&uacute;vida. Ele fica <a href="http://www.redefood.com.br/docs">aqui!</a>
                         </td>
                       </tr>
                     </table>

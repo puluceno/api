@@ -175,6 +175,8 @@ public class RedeFoodAdminResource extends HibernateMapper {
 		emailData.put("reason", reason);
 		emailData.put("password", owner.getPassword());
 		emailData.put("addressee", owner.getEmail());
+		emailData.put("cpf", owner.getCpf());
+		emailData.put("adminUrl", "\"" + "http://www." + restaurant.getSubdomain() + ".redefood.com.br/admin" + "\"");
 
 		return emailData;
 	}

@@ -47,6 +47,8 @@ public class Configuration implements Serializable {
 	private Boolean showCanceled;
 	@Column(name = "showNotDelivered")
 	private Boolean showNotDelivered;
+	@Column(name = "showTips")
+	private Boolean showTips;
 	@Column(name = "fetchTime")
 	private Short fetchTime = new Short("6");
 	@Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid e-mail")
@@ -175,6 +177,14 @@ public class Configuration implements Serializable {
 	@JsonIgnore
 	public void setNotDelivered(Boolean showNotDelivered) {
 		this.showNotDelivered = showNotDelivered;
+	}
+
+	public Boolean getShowTips() {
+		return showTips;
+	}
+
+	public void setShowTips(Boolean showTips) {
+		this.showTips = showTips;
 	}
 
 	public Short getFetchTime() {
