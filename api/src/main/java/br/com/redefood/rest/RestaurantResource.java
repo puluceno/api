@@ -476,8 +476,6 @@ public class RestaurantResource extends HibernateMapper {
 	 * 
 	 * @param idRestaurant
 	 *            Restaurant id passed through URL
-	 * @param token
-	 *            User identificator
 	 * @param subsidiary
 	 *            Restaurant Subsidiary to be updated
 	 * @return Response object to the requester
@@ -708,5 +706,19 @@ public class RestaurantResource extends HibernateMapper {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
 	}
+
+	@Owner
+	@PUT
+	@Path("/{idRestaurant:[0-9][0-9]*}")
+	public Response editRestaurantData(@HeaderParam("locale") String locale,
+			@PathParam("idRestaurant") Short idRestaurant){
+		try{
+
+			return Response.status(200).build();
+		} catch (Exception e) {
+			return eh.restaurantExceptionHandler(e, locale, "");
+		}
+	}
+
 
 }
