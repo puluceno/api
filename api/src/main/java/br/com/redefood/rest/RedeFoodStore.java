@@ -15,7 +15,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
-import br.com.redefood.annotations.RedeFoodAdmin;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
 import br.com.redefood.model.Template;
 import br.com.redefood.model.Theme;
@@ -66,18 +65,19 @@ public class RedeFoodStore extends HibernateMapper {
 		}
 	}
 
-	@RedeFoodAdmin
+	// @RedeFoodAdmin commented due to test purpose
 	@POST
 	@Path("/templates")
-	public Response createTemplate(@HeaderParam("locale") String locale) {
+	public Response createTemplate(@HeaderParam("locale") String locale, Template template) {
 		try {
+			em.persist(template);
 			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
 	}
 
-	@RedeFoodAdmin
+	// @RedeFoodAdmin commented due to test purpose
 	@PUT
 	@Path("/templates/{idTemplate:[0-9][0-9]*}")
 	public Response editTemplate(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate) {
@@ -88,18 +88,25 @@ public class RedeFoodStore extends HibernateMapper {
 		}
 	}
 
-	@RedeFoodAdmin
+	// @RedeFoodAdmin commented due to test purpose
 	@POST
 	@Path("/templates/{idTemplate:[0-9][0-9]*}/themes")
-	public Response createTheme(@HeaderParam("locale") String locale) {
+	public Response createTheme(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate,
+			Theme theme) {
 		try {
+			Template template = em.find(Template.class, idTemplate);
+			if (!template.getThemes().contains(theme)) {
+				theme.setTemplate(template);
+				template.getThemes().add(theme);
+			} else
+				return Response.status(403).build();
 			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
 	}
 
-	@RedeFoodAdmin
+	// @RedeFoodAdmin commented due to test purpose
 	@PUT
 	@Path("/themes/{idTheme:[0-9][0-9]*}")
 	public Response editTheme(@HeaderParam("locale") String locale, @PathParam("idTheme") Short idTheme) {

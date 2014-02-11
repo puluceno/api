@@ -962,6 +962,13 @@ public class RedeFoodExceptionHandler {
 			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 		}
 
+		if (e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().contains("Column")) {
+			String columnName = e.getCause().getMessage().split("'")[1];
+			String answer = LocaleResource.getString(locale, "exception.generic.column.null", "'" + columnName + "'");
+			log.log(Level.FINE, answer);
+			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
+		}
+
 		String answer = LocaleResource.getProperty(locale).getProperty("exception.generic");
 		log.log(Level.SEVERE, answer);
 		log.log(Level.SEVERE, exceptionPlace(locale, e.getMessage()));
