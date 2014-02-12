@@ -62,11 +62,12 @@ public class FileUploadService {
 
 				bytes = IOUtils.toByteArray(inputStream);
 
-				// constructs upload file path
+				// constructs upload file name
 				extension = fileName.split("\\.")[1];
 				Double a = Arrays.hashCode(bytes) * 31.31;
 				fileNameHashed = a.intValue();
 
+				// constructs upload file path
 				String directory = RedeFoodConstants.DEFAULT_UPLOADED_FILE_PATH + userClass + "/" + userID + "/";
 				createDirectory(directory);
 
@@ -106,7 +107,7 @@ public class FileUploadService {
 		String[] contentDisposition = header.getFirst("Content-Disposition").split(";");
 
 		for (String filename : contentDisposition) {
-			if ((filename.trim().startsWith("filename"))) {
+			if (filename.trim().startsWith("filename")) {
 
 				String[] name = filename.split("=");
 

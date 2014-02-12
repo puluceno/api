@@ -219,13 +219,14 @@ public class EmployeeResource extends HibernateMapper {
 			if (uploadFile.contains("error"))
 				throw new Exception("file error");
 
-			// clear the old photo, to make the system overwrite it
-			FileUploadService.deleteOldFile(employee.getPhoto());
 
 			employee.setPhoto(uploadFile);
 
 			em.merge(employee);
 			em.flush();
+
+			// clear the old photo, to make the system overwrite it
+			FileUploadService.deleteOldFile(employee.getPhoto());
 
 			String answer = LocaleResource.getString(locale, "employee.updated", employee.getFirstName(),
 					employee.getCpf(), idSubsidiary);

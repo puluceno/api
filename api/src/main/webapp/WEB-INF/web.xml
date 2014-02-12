@@ -31,7 +31,7 @@
 			br.com.redefood.rest.RatingResource,
 			br.com.redefood.rest.RedeFoodAdminResource,
 			br.com.redefood.rest.RedeFoodResource,
-			br.com.redefood.rest.RedeFoodStore,
+			br.com.redefood.rest.RedeFoodStoreResource,
 			br.com.redefood.rest.RestaurantResource,
 			br.com.redefood.rest.SquareResource,
 			br.com.redefood.rest.SubsidiaryResource,

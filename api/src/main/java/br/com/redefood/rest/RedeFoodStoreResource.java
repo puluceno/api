@@ -1,6 +1,7 @@
 package br.com.redefood.rest;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -19,12 +20,13 @@ import br.com.redefood.exceptions.RedeFoodExceptionHandler;
 import br.com.redefood.model.Template;
 import br.com.redefood.model.Theme;
 import br.com.redefood.util.HibernateMapper;
+import br.com.redefood.util.LocaleResource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Stateless
 @Path("/store")
-public class RedeFoodStore extends HibernateMapper {
+public class RedeFoodStoreResource extends HibernateMapper {
 	private static final ObjectMapper mapper = HibernateMapper.getMapper();
 	@Inject
 	private EntityManager em;
@@ -71,6 +73,8 @@ public class RedeFoodStore extends HibernateMapper {
 	public Response createTemplate(@HeaderParam("locale") String locale, Template template) {
 		try {
 			em.persist(template);
+			String answer = LocaleResource.getProperty(locale).getProperty("redefood.template.created");
+			log.log(Level.FINE, answer);
 			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
@@ -80,8 +84,17 @@ public class RedeFoodStore extends HibernateMapper {
 	// @RedeFoodAdmin commented due to test purpose
 	@PUT
 	@Path("/templates/{idTemplate:[0-9][0-9]*}")
-	public Response editTemplate(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate) {
+	public Response editTemplate(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate,
+			Template template) {
 		try {
+			Template find = em.find(Template.class, idTemplate);
+			find.setDescription(template.getDescription());
+			find.setDemo(template.getDemo());
+			find.setMobile(template.getMobile());
+			find.setName(template.getName());
+
+			String answer = LocaleResource.getProperty(locale).getProperty("redefood.template.updated");
+			log.log(Level.FINE, answer);
 			return Response.status(200).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
@@ -100,6 +113,9 @@ public class RedeFoodStore extends HibernateMapper {
 				template.getThemes().add(theme);
 			} else
 				return Response.status(403).build();
+
+			String answer = LocaleResource.getProperty(locale).getProperty("redefood.theme.created");
+			log.log(Level.FINE, answer);
 			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
@@ -109,8 +125,14 @@ public class RedeFoodStore extends HibernateMapper {
 	// @RedeFoodAdmin commented due to test purpose
 	@PUT
 	@Path("/themes/{idTheme:[0-9][0-9]*}")
-	public Response editTheme(@HeaderParam("locale") String locale, @PathParam("idTheme") Short idTheme) {
+	public Response editTheme(@HeaderParam("locale") String locale, @PathParam("idTheme") Short idTheme, Theme theme) {
 		try {
+			Theme find = em.find(Theme.class, idTheme);
+			find.setDescription(theme.getDescription());
+			find.setName(theme.getName());
+
+			String answer = LocaleResource.getProperty(locale).getProperty("redefood.theme.updated");
+			log.log(Level.FINE, answer);
 			return Response.status(200).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
