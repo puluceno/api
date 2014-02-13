@@ -50,6 +50,8 @@ import br.com.redefood.model.RestaurantType;
 import br.com.redefood.model.Subsidiary;
 import br.com.redefood.model.SubsidiaryMessages;
 import br.com.redefood.model.SubsidiaryModule;
+import br.com.redefood.model.Template;
+import br.com.redefood.model.Theme;
 import br.com.redefood.model.complex.EmailDataDTO;
 import br.com.redefood.model.complex.RestaurantComplexType;
 import br.com.redefood.model.enumtype.SubsidiaryMessageLocation;
@@ -709,10 +711,12 @@ public class RestaurantResource extends HibernateMapper {
 
 	@Owner
 	@PUT
-	@Path("/{idRestaurant:[0-9][0-9]*}")
-	public Response editRestaurantData(@HeaderParam("locale") String locale,
-			@PathParam("idRestaurant") Short idRestaurant){
-		try{
+	@Path("/{idRestaurant:[0-9][0-9]*}/template/{idTemplate:[0-9][0-9]*}")
+	public Response editRestaurantTemplate(@HeaderParam("locale") String locale,
+			@PathParam("idRestaurant") Short idRestaurant, @PathParam("idTemplate") Short idTemplate) {
+		try {
+			Restaurant restaurant = em.find(Restaurant.class, idRestaurant);
+			restaurant.setTemplate(em.find(Template.class, idTemplate).getName());
 
 			return Response.status(200).build();
 		} catch (Exception e) {
@@ -720,5 +724,25 @@ public class RestaurantResource extends HibernateMapper {
 		}
 	}
 
+	// @Owner commented due to test purpose
+	@PUT
+	@Path("/{idRestaurant:[0-9][0-9]*}/theme/{idTheme:[0-9][0-9]*}")
+	public Response editRestaurantTheme(@HeaderParam("locale") String locale,
+			@PathParam("idRestaurant") Short idRestaurant, @PathParam("idTheme") Short idTheme) {
+		try {
+			Restaurant restaurant = em.find(Restaurant.class, idRestaurant);
+			Theme theme = em.find(Theme.class, idTheme);
+			Template template = (Template) em.createNamedQuery(Template.FIND_TEMPLATE_BY_NAME)
+					.setParameter("name", restaurant.getTemplate()).getSingleResult();
 
+			if (theme != null && template.getThemes().contains(theme)) {
+				restaurant.setTheme(theme.getName());
+				return Response.status(200).build();
+			}
+
+			return Response.status(403).build();
+		} catch (Exception e) {
+			return eh.restaurantExceptionHandler(e, locale, "");
+		}
+	}
 }
