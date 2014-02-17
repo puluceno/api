@@ -41,7 +41,7 @@ public class Template implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Basic(optional = false)
 	@Column(name = "idTemplate", nullable = false)
-	private Short idTemplate;
+	private Short id;
 	@Basic(optional = false)
 	@Column(name = "name", nullable = false, length = 60)
 	private String name;
@@ -66,23 +66,23 @@ public class Template implements Serializable {
 	public Template() {
 	}
 
-	public Template(Short idTemplate) {
-		this.idTemplate = idTemplate;
+	public Template(Short id) {
+		this.id = id;
 	}
 
-	public Template(Short idTemplate, String name, boolean mobile) {
-		this.idTemplate = idTemplate;
+	public Template(Short id, String name, boolean mobile) {
+		this.id = id;
 		this.name = name;
 		this.mobile = mobile;
 	}
 
 	@JsonProperty("id")
-	public Short getIdTemplate() {
-		return idTemplate;
+	public Short getId() {
+		return id;
 	}
 
-	public void setIdTemplate(Short idTemplate) {
-		this.idTemplate = idTemplate;
+	public void setId(Short id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -161,7 +161,7 @@ public class Template implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (idTemplate == null ? 0 : idTemplate.hashCode());
+		result = prime * result + (id == null ? 0 : id.hashCode());
 		result = prime * result + (name == null ? 0 : name.hashCode());
 		return result;
 	}
@@ -175,10 +175,10 @@ public class Template implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Template other = (Template) obj;
-		if (idTemplate == null) {
-			if (other.idTemplate != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!idTemplate.equals(other.idTemplate))
+		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)

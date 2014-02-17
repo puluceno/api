@@ -27,9 +27,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Table(name = "Theme", schema = "RedeFood")
 @XmlRootElement
 @NamedQueries({
-	@NamedQuery(name = Theme.FIND_ALL_THEMES, query = "SELECT t FROM Theme t"),
-	@NamedQuery(name = Theme.FIND_THEME_BY_NAME, query = "SELECT t FROM Theme t WHERE t.name LIKE :name"),
-	@NamedQuery(name = Theme.FIND_THEMES_BY_TEMPLATE, query = "SELECT t FROM Theme t WHERE t.template.idTemplate = :idTemplate") })
+		@NamedQuery(name = Theme.FIND_ALL_THEMES, query = "SELECT t FROM Theme t"),
+		@NamedQuery(name = Theme.FIND_THEME_BY_NAME, query = "SELECT t FROM Theme t WHERE t.name LIKE :name"),
+		@NamedQuery(name = Theme.FIND_THEMES_BY_TEMPLATE, query = "SELECT t FROM Theme t WHERE t.template.id = :idTemplate") })
 public class Theme implements Serializable {
 	private static final long serialVersionUID = 1L;
 
