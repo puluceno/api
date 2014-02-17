@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -16,9 +17,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
 import br.com.redefood.model.Template;
 import br.com.redefood.model.Theme;
+import br.com.redefood.service.FileUploadService;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.LocaleResource;
 
@@ -74,7 +78,7 @@ public class RedeFoodStoreResource extends HibernateMapper {
 		try {
 			em.persist(template);
 			String answer = LocaleResource.getProperty(locale).getProperty("redefood.template.created");
-			log.log(Level.FINE, answer);
+			log.log(Level.INFO, answer);
 			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
@@ -94,8 +98,48 @@ public class RedeFoodStoreResource extends HibernateMapper {
 			find.setName(template.getName());
 
 			String answer = LocaleResource.getProperty(locale).getProperty("redefood.template.updated");
-			log.log(Level.FINE, answer);
+			log.log(Level.INFO, answer);
 			return Response.status(200).build();
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerResponse(e, locale);
+		}
+	}
+
+	// @RedeFoodAdmin commented due to test purpose
+	@POST
+	@Path("/templates/{idTemplate:[0-9][0-9]*}/preview/{idPreview:[0-9][0-9]*}")
+	public Response addPreviewImages(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate,
+			@PathParam("idPreview") Short idPreview, MultipartFormDataInput photo) {
+		try {
+			Template template = em.find(Template.class, idTemplate);
+
+			String uploadFile = FileUploadService.uploadFile("default/templates/" + template.getName().toLowerCase(),
+					idTemplate.toString(), photo);
+			if (uploadFile.contains("error"))
+				throw new Exception("file error");
+
+			switch (idPreview) {
+			case 1:
+				FileUploadService.deleteOldFile(template.getPreview1());
+				template.setPreview1(uploadFile);
+				break;
+			case 2:
+				FileUploadService.deleteOldFile(template.getPreview2());
+				template.setPreview2(uploadFile);
+				break;
+			case 3:
+				FileUploadService.deleteOldFile(template.getPreview3());
+				template.setPreview3(uploadFile);
+				break;
+			case 4:
+				FileUploadService.deleteOldFile(template.getPreview4());
+				template.setPreview4(uploadFile);
+				break;
+			default:
+				break;
+			}
+
+			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
@@ -115,7 +159,7 @@ public class RedeFoodStoreResource extends HibernateMapper {
 				return Response.status(403).build();
 
 			String answer = LocaleResource.getProperty(locale).getProperty("redefood.theme.created");
-			log.log(Level.FINE, answer);
+			log.log(Level.INFO, answer);
 			return Response.status(201).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
@@ -132,7 +176,22 @@ public class RedeFoodStoreResource extends HibernateMapper {
 			find.setName(theme.getName());
 
 			String answer = LocaleResource.getProperty(locale).getProperty("redefood.theme.updated");
-			log.log(Level.FINE, answer);
+			log.log(Level.INFO, answer);
+			return Response.status(200).build();
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerResponse(e, locale);
+		}
+	}
+
+	// @RedeFoodAdmin commented due to test purpose
+	@DELETE
+	@Path("/themes/{idTheme:[0-9][0-9]*}")
+	public Response deleteTheme(@HeaderParam("locale") String locale, @PathParam("idTheme") Short idTheme) {
+		try {
+			em.remove(em.find(Theme.class, idTheme));
+
+			String answer = LocaleResource.getProperty(locale).getProperty("redefood.theme.removed");
+			log.log(Level.INFO, answer);
 			return Response.status(200).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
