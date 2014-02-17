@@ -90,18 +90,19 @@ public class RedeFoodStoreResource extends HibernateMapper {
 	// @RedeFoodAdmin commented due to test purpose
 	@PUT
 	@Path("/templates/{idTemplate:[0-9][0-9]*}")
+	@Produces("application/json;charset=UTF8")
 	public Response editTemplate(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate,
 			Template template) {
 		try {
-			Template find = em.find(Template.class, idTemplate);
-			find.setDescription(template.getDescription());
-			find.setDemo(template.getDemo());
-			find.setMobile(template.getMobile());
-			find.setName(template.getName());
+			Template updatedTemplate = em.find(Template.class, idTemplate);
+			updatedTemplate.setDescription(template.getDescription());
+			updatedTemplate.setDemo(template.getDemo());
+			updatedTemplate.setMobile(template.getMobile());
+			updatedTemplate.setName(template.getName());
 
 			String answer = LocaleResource.getProperty(locale).getProperty("redefood.template.updated");
 			log.log(Level.INFO, answer);
-			return Response.status(200).build();
+			return Response.status(200).entity(mapper.writeValueAsString(updatedTemplate)).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
@@ -117,7 +118,7 @@ public class RedeFoodStoreResource extends HibernateMapper {
 			Template template = em.find(Template.class, idTemplate);
 
 			String uploadFile = FileUploadService.uploadFile("default/templates/"
-					+ template.getName().toLowerCase().trim(), idTemplate.toString(), photo);
+					+ template.getName().toLowerCase().replace(" ", ""), idTemplate.toString(), photo);
 			if (uploadFile.contains("error"))
 				throw new Exception("file error");
 
