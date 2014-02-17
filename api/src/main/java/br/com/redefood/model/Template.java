@@ -27,9 +27,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Table(name = "Template", schema = "RedeFood")
 @XmlRootElement
 @NamedQueries({
-	@NamedQuery(name = Template.FIND_ALL_TEMPLATES, query = "SELECT DISTINCT t FROM Template t JOIN FETCH t.themes"),
-	@NamedQuery(name = Template.FIND_TEMPLATE_BY_NAME, query = "SELECT t FROM Template t WHERE t.name = :name"),
-	@NamedQuery(name = Template.FIND_TEMPLATE_BY_MOBILE, query = "SELECT t FROM Template t WHERE t.mobile = :mobile") })
+		@NamedQuery(name = Template.FIND_ALL_TEMPLATES, query = "SELECT DISTINCT t FROM Template t LEFT JOIN FETCH t.themes"),
+		@NamedQuery(name = Template.FIND_TEMPLATE_BY_NAME, query = "SELECT t FROM Template t WHERE t.name = :name"),
+		@NamedQuery(name = Template.FIND_TEMPLATE_BY_MOBILE, query = "SELECT t FROM Template t WHERE t.mobile = :mobile") })
 public class Template implements Serializable {
 	private static final long serialVersionUID = 1L;
 
