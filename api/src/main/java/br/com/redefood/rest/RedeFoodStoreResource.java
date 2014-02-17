@@ -26,6 +26,7 @@ import br.com.redefood.model.Theme;
 import br.com.redefood.service.FileUploadService;
 import br.com.redefood.util.HibernateMapper;
 import br.com.redefood.util.LocaleResource;
+import br.com.redefood.util.RedeFoodAnswerGenerator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -115,8 +116,8 @@ public class RedeFoodStoreResource extends HibernateMapper {
 		try {
 			Template template = em.find(Template.class, idTemplate);
 
-			String uploadFile = FileUploadService.uploadFile("default/templates/" + template.getName().toLowerCase(),
-					idTemplate.toString(), photo);
+			String uploadFile = FileUploadService.uploadFile("default/templates/"
+					+ template.getName().toLowerCase().trim(), idTemplate.toString(), photo);
 			if (uploadFile.contains("error"))
 				throw new Exception("file error");
 
@@ -141,7 +142,25 @@ public class RedeFoodStoreResource extends HibernateMapper {
 				break;
 			}
 
-			return Response.status(201).build();
+			String answer = LocaleResource.getString(locale, "redefood.template.image.added", "preview" + idPreview,
+					template.getName());
+			log.log(Level.INFO, answer);
+			return RedeFoodAnswerGenerator.generateSuccessAnswerWithoutSuccess(200, uploadFile);
+		} catch (Exception e) {
+			return eh.genericExceptionHandlerResponse(e, locale);
+		}
+	}
+
+	// @RedeFoodAdmin commented due to test purpose
+	@DELETE
+	@Path("/templates/{idTemplate:[0-9][0-9]*}")
+	public Response deleteTemplate(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate) {
+		try {
+			em.remove(em.find(Template.class, idTemplate));
+
+			String answer = LocaleResource.getProperty(locale).getProperty("redefood.template.removed");
+			log.log(Level.INFO, answer);
+			return Response.status(200).build();
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerResponse(e, locale);
 		}
