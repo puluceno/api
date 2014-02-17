@@ -42,7 +42,7 @@ public class RedeFoodExceptionHandler {
 		if (e.getMessage().contentEquals("invalid subdomain")
 				|| e.getMessage().contentEquals("No entity found for query")) {
 			String answer = LocaleResource.getProperty(locale).getProperty("exception.restaurant.subdomain");
-			log.log(Level.FINE, answer);
+			log.log(Level.INFO, answer);
 			return RedeFoodAnswerGenerator.generateEmptyAnswer();
 		}
 		if (e.getMessage().contentEquals("invalid cnpj")) {
@@ -965,7 +965,7 @@ public class RedeFoodExceptionHandler {
 		if (e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().contains("Column")) {
 			String columnName = e.getCause().getMessage().split("'")[1];
 			String answer = LocaleResource.getString(locale, "exception.generic.column.null", "'" + columnName + "'");
-			log.log(Level.FINE, answer);
+			log.log(Level.INFO, answer);
 			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 		}
 

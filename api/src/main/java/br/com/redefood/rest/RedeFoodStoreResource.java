@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -108,6 +109,7 @@ public class RedeFoodStoreResource extends HibernateMapper {
 	// @RedeFoodAdmin commented due to test purpose
 	@POST
 	@Path("/templates/{idTemplate:[0-9][0-9]*}/preview/{idPreview:[0-9][0-9]*}")
+	@Consumes("multipart/form-data")
 	public Response addPreviewImages(@HeaderParam("locale") String locale, @PathParam("idTemplate") Short idTemplate,
 			@PathParam("idPreview") Short idPreview, MultipartFormDataInput photo) {
 		try {
