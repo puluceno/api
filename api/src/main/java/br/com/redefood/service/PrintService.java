@@ -662,7 +662,7 @@ public class PrintService {
 		if (dash.get("totalRenevue").equals("null")) {
 			printerData.add((String) dash.get("totalOrderValue"));
 		} else {
-			printerData.add((String) dash.get("totalRenevue"));
+			printerData.add(String.valueOf(dash.get("totalRenevue")));
 		}
 
 		printerData.add(PrinterConstants.LINE_BREAK);
@@ -678,7 +678,7 @@ public class PrintService {
 			printerData.add(PrinterConstants.BOLD_OFF);
 			printerData.add(PrinterConstants.FONT_WIDE);
 			printerData.add(LocaleResource.getProperty(locale).getProperty("CURRENCY"));
-			printerData.add((String) dash.get("totalDeliveryValue"));
+			printerData.add(String.valueOf(dash.get("totalDeliveryValue")));
 			printerData.add(PrinterConstants.LINE_BREAK);
 		}
 
@@ -879,8 +879,8 @@ public class PrintService {
 			printerData.add((String.valueOf(hours.getHours()).contentEquals("1") ? String.valueOf(hours.getHours())
 					+ " hora" : String.valueOf(hours.getHours()) + " horas")
 					+ " e "
-					+ String.valueOf(minutes.getMinutes() > 59 ? minutes.getMinutes() - hours.getHours() * 60
-							: minutes.getMinutes()) + " minutos");
+					+ String.valueOf(minutes.getMinutes() > 59 ? minutes.getMinutes() - hours.getHours() * 60 : minutes
+							.getMinutes()) + " minutos");
 		}
 		printerData.add(PrinterConstants.LINE_BREAK);
 		// Employee name
