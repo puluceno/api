@@ -33,6 +33,8 @@ import br.com.redefood.model.enumtype.TypeOrder;
 import br.com.redefood.rest.OrderResource;
 import br.com.redefood.util.LocaleResource;
 import br.com.redefood.util.PrinterConstants;
+import br.com.redefood.util.RedeFoodConstants;
+import br.com.redefood.util.RedeFoodUtils;
 
 public class PrintService {
 
@@ -123,7 +125,10 @@ public class PrintService {
 
 		// começa a tratar os ingredientes
 
-		for (MealOrder mealOrder : order.getMealsOrder()) {
+		List<MealOrder> mealsOrder = order.getMealsOrder();
+		MealOrder mealOrder = null;
+		for (int k = 0; k < mealsOrder.size(); k++) {
+			mealOrder = mealsOrder.get(k);
 			List<String> ingredients = new ArrayList<String>();
 
 			List<String> addedIngredients = new ArrayList<String>();
@@ -176,9 +181,11 @@ public class PrintService {
 			}
 
 			// começa a impressão
+			// Print meal name
 			printerData.add(PrinterConstants.FONT_BIG);
 			printerData.add(PrinterConstants.ALLINGMENT_LEFT);
 			printerData.add(PrinterConstants.BOLD_ON);
+			printerData.add(k + 1 + ". ");
 			printerData.add(mealOrder.getName());
 			printerData.add(PrinterConstants.BOLD_OFF);
 			printerData.add(": ");
@@ -396,10 +403,10 @@ public class PrintService {
 
 		// Pre-Header
 		printerData.add(PrinterConstants.ALLINGMENT_CENTER);
-		printerData.add(LocaleResource.getProperty(locale).getProperty("order.print.redefood.header"));
+		printerData.add(order.getSubsidiary().getRestaurant().getSlogan());
 		printerData.add(PrinterConstants.LINE_BREAK);
 		printerData.add(PrinterConstants.ALLINGMENT_CENTER);
-		printerData.add(LocaleResource.getProperty(locale).getProperty("order.print.redefood.url"));
+		printerData.add(RedeFoodUtils.urlBuilder(order.getSubsidiary().getRestaurant().getSubdomain()));
 		printerData.add(PrinterConstants.LINE_BREAK);
 
 		// Header
@@ -490,10 +497,14 @@ public class PrintService {
 			printerData.add(": ");
 			printerData.add(PrinterConstants.LINE_BREAK);
 		}
-		for (MealOrder mealOrder : order.getMealsOrder()) {
+		MealOrder mealOrder = null;
+		List<MealOrder> mealsOrder = order.getMealsOrder();
+		for (int j = 0; j < mealsOrder.size(); j++) {
+			mealOrder = mealsOrder.get(j);
 			printerData.add(PrinterConstants.FONT_BIG);
 			printerData.add(PrinterConstants.ALLINGMENT_LEFT);
 			printerData.add(PrinterConstants.BOLD_ON);
+			printerData.add(j + 1 + ". ");
 			printerData.add(mealOrder.getName());
 			printerData.add(PrinterConstants.BOLD_OFF);
 			printerData.add(": ");
@@ -513,9 +524,9 @@ public class PrintService {
 			}
 
 			boolean printOptional = true;
-			for (Iterator<MealOrderIngredient> iterator = mealOrder.getMealOrderIngredients().iterator(); iterator
-					.hasNext();) {
-				MealOrderIngredient mealOrderIngredient = iterator.next();
+			int size = mealOrder.getMealOrderIngredients().size();
+			for (int i = 0; i < size; i++) {
+				MealOrderIngredient mealOrderIngredient = mealOrder.getMealOrderIngredients().get(i);
 				printerData.add(PrinterConstants.FONT_SMALL);
 				if (printOptional && mealOrderIngredient.getPrice() != null
 						&& mealOrderIngredient.getPrice().compareTo(0.0) > 0) {
@@ -529,13 +540,14 @@ public class PrintService {
 					printerData.add(LocaleResource.getProperty(locale).getProperty("CURRENCY"));
 					printerData.add(formatDouble(mealOrderIngredient.getPrice()));
 					printerData.add(")");
-					if (iterator.hasNext()) {
+					if (i < size && mealOrder.getMealOrderIngredients().get(i + 1).getPrice() != null
+							&& mealOrder.getMealOrderIngredients().get(i + 1).getPrice().compareTo(0.0) > 0) {
 						printerData.add(", ");
-					} else {
-						printerData.add(PrinterConstants.LINE_BREAK);
 					}
 				}
 			}
+
+			printerData.add(PrinterConstants.LINE_BREAK);
 			printerData.add("--------------------------------------------------");
 			printerData.add(PrinterConstants.LINE_BREAK);
 		}
@@ -575,9 +587,10 @@ public class PrintService {
 			printerData.add(" ");
 			printerData.add(LocaleResource.getProperty(locale).getProperty("CURRENCY"));
 			printerData.add(formatDouble(order.getOrderChange()));
-			printerData.add("; ");
+			printerData.add(" (");
 			printerData.add(LocaleResource.getProperty(locale).getProperty("CURRENCY"));
 			printerData.add(formatDouble(order.getOrderChange() - order.getTotalPrice()));
+			printerData.add(")");
 		}
 		printerData.add(PrinterConstants.FONT_SMALL);
 		printerData.add(PrinterConstants.LINE_BREAK);
@@ -608,7 +621,9 @@ public class PrintService {
 		printerData.add(PrinterConstants.LINE_BREAK);
 		printerData.add("--------------------------------------------------");
 		printerData.add(PrinterConstants.ALLINGMENT_CENTER);
-		printerData.add(LocaleResource.getProperty(locale).getProperty("order.print.footer"));
+		printerData.add(LocaleResource.getString(locale, "order.print.footer",
+				RedeFoodUtils.urlBuilder(order.getSubsidiary().getRestaurant().getSubdomain())
+						+ RedeFoodConstants.DEFAULT_RATING_SUFFIX + order.getId()));
 		// End of printing
 		printerData.add(PrinterConstants.CUT_PAPER);
 		printerData.add(PrinterConstants.CLEAR);

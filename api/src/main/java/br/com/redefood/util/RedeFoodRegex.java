@@ -1,14 +1,16 @@
 package br.com.redefood.util;
+
 /**
  * 
- * @author pulu
- * Class with methods to verify if a string matches a regular expression.
+ * @author pulu Class with methods to verify if a string matches a regular
+ *         expression.
  */
 public class RedeFoodRegex {
 
 	/**
-	 * Method to verify if a subdomain only contains alphabetical charactes (letters).
-	 * No other characters are allowed.
+	 * Method to verify if a subdomain only contains alphabetical charactes
+	 * (letters). No other characters are allowed.
+	 * 
 	 * @param subdomain
 	 * @return
 	 */

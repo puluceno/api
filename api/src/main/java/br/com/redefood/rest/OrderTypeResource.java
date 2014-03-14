@@ -22,9 +22,11 @@ import org.hibernate.Hibernate;
 import br.com.redefood.annotations.Owner;
 import br.com.redefood.annotations.Securable;
 import br.com.redefood.exceptions.RedeFoodExceptionHandler;
+import br.com.redefood.model.Module;
 import br.com.redefood.model.OrderType;
 import br.com.redefood.model.Subsidiary;
 import br.com.redefood.model.SubsidiaryModule;
+import br.com.redefood.model.enumtype.TypeOrder;
 import br.com.redefood.util.HibernateMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,18 +68,34 @@ public class OrderTypeResource extends HibernateMapper {
 	public String findAvailableOrderTypeBySubsidiary(@HeaderParam("locale") String locale,
 			@PathParam("idSubsidiary") Short idSubsidiary) {
 
-		List<OrderType> orderTypes = em.createNamedQuery(OrderType.FIND_ALL_ORDER_TYPE).getResultList();
-		Subsidiary subsidiary = em.find(Subsidiary.class, idSubsidiary);
+		try {
+			List<OrderType> orderTypes = em.createNamedQuery(OrderType.FIND_AVAILABLE_ORDERTYPE_BY_SUBSIDIARY)
+					.setParameter("idSubsidiary", idSubsidiary).getResultList();
 
-		List<OrderType> aux = new ArrayList<OrderType>();
+			List<SubsidiaryModule> subsidiaryModules = em.createNamedQuery(SubsidiaryModule.FIND_ACTIVE_BY_SUBSIDIARY)
+					.setParameter("idSubsidiary", idSubsidiary).getResultList();
 
-		for (OrderType orderType : orderTypes)
-			if (!subsidiary.getOrderTypes().contains(orderType)) {
-				aux.add(orderType);
+			List<OrderType> aux = new ArrayList<OrderType>(orderTypes);
+
+			for (SubsidiaryModule subsidiaryModule : subsidiaryModules) {
+				if (subsidiaryModule.getModule().getId() != Module.MODULE_LOCAL) {
+					for (OrderType orderType : aux) {
+						if (orderType.getType().equals(TypeOrder.LOCAL)) {
+							orderTypes.remove(orderType);
+						}
+					}
+				}
+				if (subsidiaryModule.getModule().getId() != Module.MODULE_SITE
+						|| subsidiaryModule.getModule().getId() != Module.MODULE_SQUARE) {
+					for (OrderType orderType : aux) {
+						if (orderType.getType().equals(TypeOrder.ONLINE)) {
+							orderTypes.remove(orderType);
+						}
+					}
+				}
 			}
 
-		try {
-			return mapper.writeValueAsString(aux);
+			return mapper.writeValueAsString(orderTypes);
 		} catch (Exception e) {
 			return eh.genericExceptionHandlerString(e, locale);
 		}

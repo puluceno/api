@@ -35,14 +35,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "OrderType", schema = "RedeFood")
 @NamedQueries({
-	@NamedQuery(name = OrderType.FIND_ALL_ORDER_TYPE, query = "SELECT o FROM OrderType o"),
-	@NamedQuery(name = OrderType.COUNT_BY_ORDERTYPE_SUBSIDIARY_AND_PERIOD, query = "SELECT COUNT(*) as qty, o.orderType.name as name FROM Orders o "
-			+ "WHERE o.subsidiary.idSubsidiary = :idSubsidiary "
-			+ "AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED' "
-			+ "GROUP BY o.orderType.idOrderType") })
+		@NamedQuery(name = OrderType.FIND_ALL_ORDER_TYPE, query = "SELECT o FROM OrderType o"),
+		@NamedQuery(name = OrderType.COUNT_BY_ORDERTYPE_SUBSIDIARY_AND_PERIOD, query = "SELECT COUNT(*) as qty, o.orderType.name as name FROM Orders o "
+				+ "WHERE o.subsidiary.idSubsidiary = :idSubsidiary "
+				+ "AND o.orderMade BETWEEN :from AND :to AND o.orderStatus <> 'CANCELED' "
+				+ "GROUP BY o.orderType.idOrderType"),
+		@NamedQuery(name = OrderType.FIND_AVAILABLE_ORDERTYPE_BY_SUBSIDIARY, query = "SELECT ot FROM OrderType ot WHERE ot NOT IN (SELECT sot FROM Subsidiary s JOIN s.orderTypes sot where s.idSubsidiary = :idSubsidiary)") })
 public class OrderType implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	public static final String FIND_AVAILABLE_ORDERTYPE_BY_SUBSIDIARY = "FIND_AVAILABLE_ORDERTYPE_BY_SUBSIDIARY";
 	public static final String FIND_ALL_ORDER_TYPE = "FIND_ALL_ORDER_TYPE";
 	public static final String COUNT_BY_ORDERTYPE_SUBSIDIARY_AND_PERIOD = "COUNT_BY_ORDERTYPE_SUBSIDIARY_AND_PERIOD";
 

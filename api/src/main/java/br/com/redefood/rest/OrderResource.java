@@ -219,14 +219,14 @@ public class OrderResource extends HibernateMapper {
 
 				if (address == null
 						&& (order.getOrderType().getId().intValue() == 1
-						|| order.getOrderType().getId().intValue() == 2 || order.getOrderType().getId()
-						.intValue() == 3))
+								|| order.getOrderType().getId().intValue() == 2 || order.getOrderType().getId()
+								.intValue() == 3))
 					throw new Exception("address not found");
 
 				if (address.getUser().getId() != (user.getId() == null ? employee.getId() : user.getId())
 						&& (order.getOrderType().getId().intValue() == 1
-						|| order.getOrderType().getId().intValue() == 2 || order.getOrderType().getId()
-						.intValue() == 3))
+								|| order.getOrderType().getId().intValue() == 2 || order.getOrderType().getId()
+								.intValue() == 3))
 					throw new Exception("address not bound to user");
 
 				deliver = validateDeliveryArea(subsidiary, address);
@@ -589,7 +589,7 @@ public class OrderResource extends HibernateMapper {
 		if (orderPrice.compareTo(clientPrice) != 0) {
 			log.log(Level.WARNING,
 					"Subsidiary:" + order.getSubsidiary().getId() + " | TotalPrice: " + order.getTotalPrice()
-					+ " | Calculated Price: " + orderPrice);
+							+ " | Calculated Price: " + orderPrice);
 			throw new Exception("totalPrice wrong");
 		}
 
@@ -1046,7 +1046,7 @@ public class OrderResource extends HibernateMapper {
 		Notificator notificator = new OrderWaitingNotificator();
 		log.log(Level.INFO,
 				"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()
-				+ " Waiting.");
+						+ " Waiting.");
 		notificator.send(prepareMessage(order, null));
 	}
 
@@ -1054,7 +1054,7 @@ public class OrderResource extends HibernateMapper {
 		Notificator notificator = new OrderCanceledNotificator();
 		log.log(Level.INFO,
 				"Sending e-mail to user " + order.getUser().getId() + ". Order " + order.getTotalOrderNumber()
-				+ " Canceled.");
+						+ " Canceled.");
 
 		notificator.send(prepareMessage(order, null));
 	}
@@ -1108,5 +1108,15 @@ public class OrderResource extends HibernateMapper {
 		}
 
 		return emailData;
+	}
+
+	@GET
+	@Path("/order/{idOrders:[0-9][0-9]*}")
+	public void printOrderTest(@PathParam("idOrders") Integer idOrder) throws NumberFormatException, Exception {
+		Orders order = em.find(Orders.class, idOrder);
+		// PrintService.printOrderKitchen(order, "pt_br", em.find(Printer.class,
+		// new Short("12")), "1.1.1.3");
+		PrintService.printDelivery(order, "pt_br", em.find(Printer.class, new Short("12")), "1.1.1.3", order
+				.getOrderPaymentMethod().get(0).getPaymentMethod());
 	}
 }

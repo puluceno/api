@@ -1,6 +1,7 @@
 package br.com.redefood.rest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ import br.com.redefood.model.MealType;
 import br.com.redefood.model.Module;
 import br.com.redefood.model.Neighborhood;
 import br.com.redefood.model.OrderType;
+import br.com.redefood.model.Parameter;
 import br.com.redefood.model.Profile;
 import br.com.redefood.model.Restaurant;
 import br.com.redefood.model.RestaurantType;
@@ -240,12 +242,32 @@ public class RestaurantResource extends HibernateMapper {
 	private Restaurant validateRestaurant(Restaurant restaurant) throws Exception {
 		if (restaurant.getName() == null || restaurant.getName().length() < 3)
 			throw new Exception("invalid name");
-		if (restaurant.getSubdomain() == null || restaurant.getSubdomain().length() < 3
-				|| !RedeFoodRegex.verifySubDomain(restaurant.getSubdomain()))
+		if (!verifySubdomain(restaurant.getSubdomain()))
 			throw new Exception("invalid subdomain");
 
+		restaurant.setSubdomain(restaurant.getSubdomain().toLowerCase().replace(" ", "").replace("%20", ""));
 		restaurant.setInsertDate(new Date());
 		return restaurant;
+	}
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@Path("/verify-subdomain")
+	public boolean verifySubdomain(@QueryParam("subdomain") String subdomain) {
+		if (subdomain == null || subdomain.length() < 3 || !RedeFoodRegex.verifySubDomain(subdomain))
+			return false;
+
+		String subs = (String) em.createNamedQuery(Parameter.FIND_PARAMETER_BY_KEY)
+				.setParameter("key", "reservedSubdomains").getSingleResult();
+		List<String> reserved = Arrays.asList(subs.split(";"));
+		List<String> used = em.createNamedQuery(Restaurant.FIND_ALL_RESTAURANT_SUBDOMAIN).getResultList();
+
+		used.addAll(reserved);
+
+		if (used.contains(subdomain))
+			return true;
+		else
+			return false;
 	}
 
 	private void sendNewRestaurantNotification(RestaurantComplexType rct) throws Exception {
@@ -724,7 +746,7 @@ public class RestaurantResource extends HibernateMapper {
 		}
 	}
 
-	// @Owner commented due to test purpose
+	@Owner
 	@PUT
 	@Path("/{idRestaurant:[0-9][0-9]*}/theme/{idTheme:[0-9][0-9]*}")
 	public Response editRestaurantTheme(@HeaderParam("locale") String locale,
@@ -741,6 +763,20 @@ public class RestaurantResource extends HibernateMapper {
 			}
 
 			return Response.status(403).build();
+		} catch (Exception e) {
+			return eh.restaurantExceptionHandler(e, locale, "");
+		}
+	}
+
+	@Owner
+	@PUT
+	@Path("/{idRestaurant:[0-9][0-9]*}/slogan")
+	public Response editRestaurantSlogan(@HeaderParam("locale") String locale,
+			@PathParam("idRestaurant") Short idRestaurant, String slogan) {
+		try {
+			Restaurant restaurant = em.find(Restaurant.class, idRestaurant);
+			restaurant.setSlogan(slogan);
+			return Response.status(200).build();
 		} catch (Exception e) {
 			return eh.restaurantExceptionHandler(e, locale, "");
 		}
