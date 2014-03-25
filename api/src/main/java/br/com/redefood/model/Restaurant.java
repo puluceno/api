@@ -39,7 +39,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 		@NamedQuery(name = Restaurant.FIND_PENDING_RESTAURANTS, query = "SELECT r FROM Restaurant r INNER JOIN FETCH r.subsidiaries s WHERE s.active = false"),
 		@NamedQuery(name = Restaurant.FIND_BY_EMPLOYEE, query = "SELECT DISTINCT r FROM Restaurant r INNER JOIN FETCH r.subsidiaries s INNER JOIN s.employeeList e WHERE e.idEmployee = :idEmployee"),
 		@NamedQuery(name = Restaurant.FIND_ATTEND_NEIGHBORHOOD, query = "SELECT DISTINCT r FROM Restaurant r INNER JOIN FETCH r.subsidiaries s INNER JOIN s.deliveryAreas d WHERE d.neighborhood.id = :idNeighborhood"),
-		@NamedQuery(name = Restaurant.FIND_ALL_RESTAURANT_SUBDOMAIN, query = "SELECT r.subdomain FROM Restaurant r") })
+		@NamedQuery(name = Restaurant.FIND_ALL_RESTAURANT_SUBDOMAIN, query = "SELECT r.subdomain FROM Restaurant r"),
+		@NamedQuery(name = Restaurant.FIND_RESTAURANT_SITE_DATA_BY_IDRESTAURANT, query = "SELECT new br.com.redefood.model.complex.SiteDTO(r.template, r.theme, r.name, r.logo, r.idRestaurant, s.idSubsidiary, s.name) FROM Restaurant r JOIN r.subsidiaries s WHERE r.idRestaurant = :idRestaurant") })
 public class Restaurant implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -51,6 +52,7 @@ public class Restaurant implements Serializable {
 	public static final String FIND_BY_EMPLOYEE = "FIND_BY_EMPLOYEE";
 	public static final String FIND_ATTEND_NEIGHBORHOOD = "FIND_ATTEND_NEIGHBORHOOD";
 	public static final String FIND_ALL_RESTAURANT_SUBDOMAIN = "FIND_ALL_RESTAURANT_SUBDOMAIN";
+	public static final String FIND_RESTAURANT_SITE_DATA_BY_IDRESTAURANT = "FIND_RESTAURANT_SITE_DATA_BY_IDRESTAURANT";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -242,7 +242,7 @@ public class RestaurantResource extends HibernateMapper {
 	private Restaurant validateRestaurant(Restaurant restaurant) throws Exception {
 		if (restaurant.getName() == null || restaurant.getName().length() < 3)
 			throw new Exception("invalid name");
-		if (!verifySubdomain(restaurant.getSubdomain()))
+		if (verifySubdomain(restaurant.getSubdomain()))
 			throw new Exception("invalid subdomain");
 
 		restaurant.setSubdomain(restaurant.getSubdomain().toLowerCase().replace(" ", "").replace("%20", ""));

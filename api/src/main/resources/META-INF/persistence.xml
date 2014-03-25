@@ -13,9 +13,9 @@
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
 
 			<!-- Properties for Hibernate 2nd level cache with Infinispan -->
-<!-- 			<property name="hibernate.cache.use_second_level_cache" -->
-<!-- 				value="true" /> -->
-<!-- 			<property name="hibernate.cache.use_query_cache" value="true" /> -->
+			<property name="hibernate.cache.use_second_level_cache"
+				value="true" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
 
 
 			<!-- <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.infinispan.InfinispanRegionFactory"/> -->

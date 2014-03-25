@@ -45,7 +45,6 @@ public class SquareResource extends HibernateMapper {
 	private RedeFoodExceptionHandler eh;
 
 	@SuppressWarnings("unchecked")
-	// @Cache(maxAge = 10)
 	@GET
 	@Produces("application/json;charset=UTF8")
 	public String populateSquareRestaurants(@HeaderParam("locale") String locale,
@@ -161,11 +160,11 @@ public class SquareResource extends HibernateMapper {
 					rest.put(
 							"minPrice",
 							em.createNamedQuery(Meal.FIND_MIN_PRICE_BY_SUBSIDIARY)
-							.setParameter("idSubsidiary", sub.getId()).getSingleResult());
+									.setParameter("idSubsidiary", sub.getId()).getSingleResult());
 					rest.put(
 							"maxPrice",
 							em.createNamedQuery(Meal.FIND_MAX_PRICE_BY_SUBSIDIARY)
-							.setParameter("idSubsidiary", sub.getId()).getSingleResult());
+									.setParameter("idSubsidiary", sub.getId()).getSingleResult());
 					// Delivery Tax
 					if (idNeighborhood != null) {
 						for (DeliveryArea deliveryArea : sub.getDeliveryAreas())
