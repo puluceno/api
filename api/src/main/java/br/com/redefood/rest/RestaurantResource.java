@@ -242,21 +242,26 @@ public class RestaurantResource extends HibernateMapper {
 	private Restaurant validateRestaurant(Restaurant restaurant) throws Exception {
 		if (restaurant.getName() == null || restaurant.getName().length() < 3)
 			throw new Exception("invalid name");
-		if (!isSubdomainValidAndAvailable(restaurant.getSubdomain()))
+		if (!isSubdomainValid(restaurant.getSubdomain()))
 			throw new Exception("invalid subdomain");
+		if (!isSubdomainAvailable(restaurant.getSubdomain()))
+			throw new Exception("used subdomain");
 
 		restaurant.setSubdomain(restaurant.getSubdomain().toLowerCase().replace(" ", "").replace("%20", ""));
 		restaurant.setInsertDate(new Date());
 		return restaurant;
 	}
 
+	private boolean isSubdomainValid(String subdomain) {
+		if (subdomain == null || subdomain.length() < 3 || !RedeFoodRegex.verifySubDomain(subdomain))
+			return false;
+		return true;
+	}
+
 	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/verify-subdomain")
-	public boolean isSubdomainValidAndAvailable(@QueryParam("subdomain") String subdomain) {
-		if (subdomain == null || subdomain.length() < 3 || !RedeFoodRegex.verifySubDomain(subdomain))
-			return false;
-
+	public boolean isSubdomainAvailable(@QueryParam("subdomain") String subdomain) {
 		String subs = (String) em.createNamedQuery(Parameter.FIND_PARAMETER_BY_KEY)
 				.setParameter("key", "reservedSubdomains").getSingleResult();
 		List<String> reserved = Arrays.asList(subs.split(";"));

@@ -8,6 +8,7 @@ import javax.jms.JMSException;
 import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Response;
 
+import br.com.redefood.model.Restaurant;
 import br.com.redefood.util.LocaleResource;
 import br.com.redefood.util.RedeFoodAnswerGenerator;
 
@@ -39,9 +40,14 @@ public class RedeFoodExceptionHandler {
 			log.log(Level.INFO, answer);
 			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 		}
-		if (e.getMessage().contentEquals("invalid subdomain")
-				|| e.getMessage().contentEquals("No entity found for query")) {
-			String answer = LocaleResource.getProperty(locale).getProperty("exception.restaurant.subdomain");
+		if (e.getMessage().contentEquals("invalid subdomain")) {
+			Restaurant rest = (Restaurant) parameter[0];
+			String answer = LocaleResource.getString(locale, "exception.restaurant.subdomain", rest.getSubdomain());
+			log.log(Level.INFO, answer);
+			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
+		}
+		if (e.getMessage().contentEquals("used subdomain")) {
+			String answer = LocaleResource.getProperty(locale).getProperty("exception.restaurant.subdomain.unique");
 			log.log(Level.INFO, answer);
 			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 		}
