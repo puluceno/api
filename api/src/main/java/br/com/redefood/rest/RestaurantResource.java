@@ -242,7 +242,7 @@ public class RestaurantResource extends HibernateMapper {
 	private Restaurant validateRestaurant(Restaurant restaurant) throws Exception {
 		if (restaurant.getName() == null || restaurant.getName().length() < 3)
 			throw new Exception("invalid name");
-		if (verifySubdomain(restaurant.getSubdomain()))
+		if (!isSubdomainValidAndAvailable(restaurant.getSubdomain()))
 			throw new Exception("invalid subdomain");
 
 		restaurant.setSubdomain(restaurant.getSubdomain().toLowerCase().replace(" ", "").replace("%20", ""));
@@ -253,7 +253,7 @@ public class RestaurantResource extends HibernateMapper {
 	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/verify-subdomain")
-	public boolean verifySubdomain(@QueryParam("subdomain") String subdomain) {
+	public boolean isSubdomainValidAndAvailable(@QueryParam("subdomain") String subdomain) {
 		if (subdomain == null || subdomain.length() < 3 || !RedeFoodRegex.verifySubDomain(subdomain))
 			return false;
 
@@ -265,9 +265,9 @@ public class RestaurantResource extends HibernateMapper {
 		used.addAll(reserved);
 
 		if (used.contains(subdomain))
-			return true;
-		else
 			return false;
+		else
+			return true;
 	}
 
 	private void sendNewRestaurantNotification(RestaurantComplexType rct) throws Exception {

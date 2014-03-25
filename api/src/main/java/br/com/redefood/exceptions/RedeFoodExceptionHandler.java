@@ -43,7 +43,7 @@ public class RedeFoodExceptionHandler {
 				|| e.getMessage().contentEquals("No entity found for query")) {
 			String answer = LocaleResource.getProperty(locale).getProperty("exception.restaurant.subdomain");
 			log.log(Level.INFO, answer);
-			return RedeFoodAnswerGenerator.generateEmptyAnswer();
+			return RedeFoodAnswerGenerator.generateErrorAnswer(400, answer);
 		}
 		if (e.getMessage().contentEquals("invalid cnpj")) {
 			String answer = LocaleResource.getProperty(locale).getProperty("exception.subsidiary.cnpj");
